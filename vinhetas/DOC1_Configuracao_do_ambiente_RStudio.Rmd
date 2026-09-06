@@ -75,47 +75,12 @@ Este bloco instala os pacotes distribuídos pelo CRAN. A instalação do `Seurat
 
 ```{r instalar-pacotes-cran, eval=FALSE}
 pacotes_cran <- c(
-  "Seurat",
-  "SeuratObject",
-  "sctransform",
-  "tidyverse",
-  "dplyr",
-  "ggplot2",
-  "patchwork",
-  "gridExtra",
-  "openxlsx",
-  "devtools",
-  "remotes",
-  "BiocManager",
-  "knitr",
-  "rmarkdown",
-  "aplot",
-  "circlize",
-  "cowplot",
-  "data.table",
-  "doParallel",
-  "doRNG",
-  "ggfun",
-  "gghalves",
-  "ggplotify",
-  "ggridges",
-  "ggsci",
-  "irlba",
-  "magrittr",
-  "Matrix",
-  "msigdbr",
-  "plyr",
-  "pointr",
-  "purrr",
-  "RcppML",
-  "reshape2",
-  "reticulate",
-  "rlang",
-  "RMTstat",
-  "RobustRankAggreg",
-  "roxygen2",
-  "stringr"
-)
+  "Seurat","SeuratObject","sctransform","tidyverse","dplyr","ggplot2",
+  "patchwork","gridExtra","openxlsx","devtools","remotes","BiocManager",
+  "knitr","rmarkdown","aplot","circlize", "cowplot","data.table", "doParallel",
+  "doRNG","ggfun","gghalves","ggplotify", "ggridges","ggsci", "irlba","magrittr",
+  "Matrix","msigdbr", "plyr","pointr","purrr","RcppML","reshape2","reticulate",
+  "rlang","RMTstat","RobustRankAggreg","roxygen2","stringr")
 
 for (pacote in pacotes_cran) {
   precisa_instalar <- !requireNamespace(pacote, quietly = TRUE)
@@ -156,22 +121,9 @@ O `BiocManager`, instalado no bloco anterior, é utilizado para obter os pacotes
 
 ```{r instalar-pacotes-bioconductor, eval=FALSE}
 pacotes_bioconductor <- c(
-  "glmGamPoi",
-  "MAST",
-  "AUCell",
-  "BiocParallel",
-  "ComplexHeatmap",
-  "decoupleR",
-  "fgsea",
-  "ggtree",
-  "GSEABase",
-  "Nebulosa",
-  "scde",
-  "SummarizedExperiment",
-  "sparseMatrixStats",
-  "GSVA",
-  "singscore",
-  "UCell"
+  "glmGamPoi","MAST","AUCell","BiocParallel","ComplexHeatmap","decoupleR",
+  "fgsea","ggtree","GSEABase","Nebulosa","scde","SummarizedExperiment",
+  "sparseMatrixStats","GSVA","singscore","UCell"
 )
 
 for (pacote in pacotes_bioconductor) {
@@ -258,17 +210,8 @@ Depois de executar os três grupos de instalação, reinicie a sessão pelo menu
 
 ```{r conferir-instalacao-rctd}
 pacotes_rctd <- c(
-  "Seurat",
-  "SeuratObject",
-  "SeuratData",
-  "stxBrain.SeuratData",
-  "Matrix",
-  "ggplot2",
-  "patchwork",
-  "spacexr",
-  "knitr",
-  "rmarkdown"
-)
+  "Seurat","SeuratObject","SeuratData","stxBrain.SeuratData","Matrix",
+  "ggplot2","patchwork","spacexr","knitr","rmarkdown")
 
 estado_pacotes_rctd <- vapply(
   pacotes_rctd,

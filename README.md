@@ -52,6 +52,11 @@ A carga horária total é de **8 horas**, distribuídas da seguinte forma:
 
 São recomendados conhecimentos básicos de biologia molecular e de tecnologias de sequenciamento. Experiência prévia com alguma linguagem de programação é desejável, mas não obrigatória.
 
+## Vinhetas
+
+-   [Configuração do ambiente RStudio](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
+-   [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html)
+
 ## Ministrante
 
 **Flávio Gabriel Carazza-Kessler**
@@ -61,16 +66,13 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 -   [LinkedIn](https://www.linkedin.com/in/flaviogckessler)
 -   Contato: [flaviokessler\@ufpr.br](mailto:flaviokessler@ufpr.br)
 
-## Vinhetas
-
--   [Configuração do ambiente RStudio](vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
--   [Deconvolução com RCTD](vinhetas/RCTD_Deconvolution_stxbrain.html)
-
 ## Histórico
 
 Esse curso tem origem em um curso entitulado "Análise de Dados de Transcriptômica Single-Cell e Espacial" ministrado pela Dra. Carolina Saibro-Girardi e por mim, Flávio, durante o congresso X-meeting 2026. Lá, fui gentilmente convidado para ministrar o curso novamente. Dessa vez, porém, focado mais em transcriptômica espacial e (infelizmente) ministrado apenas por mim.
 
-De toda maneira, a estrutura do curso, apresentações e códigos são oriundos (parcial ou majoritarimente) da primeira versão do curso. Por essa razão, alguns documentos contam com o nome da Dra. Carol. *Deixo aqui meu agradecimento à Carol, querida amiga, por primeiro ter me convidado para participar da primeira versão como também por compartilhar o material do curso.*
+De toda maneira, a estrutura do curso, apresentações e códigos são oriundos (parcial ou majoritarimente) da primeira versão do curso. Por essa razão, alguns documentos contam com o nome da Dra. Carol.
+
+*Deixo aqui meu agradecimento à Carol, querida amiga, por primeiro ter me convidado para participar da primeira versão como também por compartilhar o material do curso.*
 
 ## Licenças
 
