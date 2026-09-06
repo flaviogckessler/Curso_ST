@@ -6,33 +6,33 @@ Este repositório reúne os materiais do curso **Análise de Dados de Transcript
 
 Ao final do curso, espera-se que as pessoas participantes sejam capazes de:
 
-- compreender os conceitos fundamentais da transcriptômica espacial e suas aplicações nas Ciências da Saúde;
-- reconhecer as principais plataformas e a estrutura dos dados de transcriptômica espacial;
-- realizar etapas de controle de qualidade, normalização e redução de dimensionalidade com o pacote Seurat;
-- conhecer abordagens para deconvolução, comunicação celular, visualização contínua de sinal e outras análises secundárias;
-- discutir possibilidades de aplicação dessas técnicas em seus próprios contextos de pesquisa.
+-   compreender os conceitos fundamentais da transcriptômica espacial e suas aplicações nas Ciências da Saúde;
+-   reconhecer as principais plataformas e a estrutura dos dados de transcriptômica espacial;
+-   realizar etapas de controle de qualidade, normalização e redução de dimensionalidade com o pacote Seurat;
+-   conhecer abordagens para deconvolução, comunicação celular, visualização contínua de sinal e outras análises secundárias;
+-   discutir possibilidades de aplicação dessas técnicas em seus próprios contextos de pesquisa.
 
 ## Conteúdo programático
 
 ### 1. Introdução à transcriptômica espacial
 
-- fundamentos teóricos;
-- plataformas disponíveis;
-- estrutura dos dados.
+-   fundamentos teóricos;
+-   plataformas disponíveis;
+-   estrutura dos dados.
 
 ### 2. Pré-processamento de dados
 
-- controle de qualidade;
-- normalização;
-- redução de dimensionalidade;
-- uso do pacote Seurat em R.
+-   controle de qualidade;
+-   normalização;
+-   redução de dimensionalidade;
+-   uso do pacote Seurat em R.
 
 ### 3. Análise de dados em transcriptômica espacial
 
-- técnicas de deconvolução;
-- análise de comunicação celular;
-- visualização contínua de sinal;
-- outras análises secundárias.
+-   técnicas de deconvolução;
+-   análise de comunicação celular;
+-   visualização contínua de sinal;
+-   outras análises secundárias.
 
 ## Metodologia
 
@@ -42,11 +42,11 @@ O curso tem caráter teórico-prático. As exposições conceituais são seguida
 
 A carga horária total é de **8 horas**, distribuídas da seguinte forma:
 
-| Data | Horário |
-| --- | --- |
+| Data                  | Horário     |
+|-----------------------|-------------|
 | 07/09 (segunda-feira) | 18h30–20h30 |
-| 08/09 (terça-feira) | 18h30–21h30 |
-| 09/09 (quarta-feira) | 18h30–21h30 |
+| 08/09 (terça-feira)   | 18h30–21h30 |
+| 09/09 (quarta-feira)  | 18h30–21h30 |
 
 ## Pré-requisitos
 
@@ -56,21 +56,21 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 
 **Flávio Gabriel Carazza-Kessler**
 
-- [Currículo Lattes](http://lattes.cnpq.br/0370990742893359)
-- [Google Scholar](https://scholar.google.com/citations?user=DYrSfHYAAAAJ&hl=en)
-- [LinkedIn](https://www.linkedin.com/in/flaviogckessler)
-- Contato: [flaviokessler@ufpr.br](mailto:flaviokessler@ufpr.br)
+-   [Currículo Lattes](http://lattes.cnpq.br/0370990742893359)
+-   [Google Scholar](https://scholar.google.com/citations?user=DYrSfHYAAAAJ&hl=en)
+-   [LinkedIn](https://www.linkedin.com/in/flaviogckessler)
+-   Contato: [flaviokessler\@ufpr.br](mailto:flaviokessler@ufpr.br)
 
 ## Vinhetas
 
-- [Configuração do ambiente RStudio](vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
-- [Deconvolução com RCTD](vinhetas/RCTD_Deconvolution_stxbrain.html)
+-   [Configuração do ambiente RStudio](vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
+-   [Deconvolução com RCTD](vinhetas/RCTD_Deconvolution_stxbrain.html)
 
 ## Histórico
 
-Esse curso tem origem em um curso entitulado "Análise de Dados de Transcriptômica Single-Cell e Espacial" ministrado pela Dra. Carolina Saibro-Girardi e por mim, Flávio, durante o congresso X-meeting 2026. Lá, fui gentilmente convidado para ministrar o curso novamente. Dessa vez, porém, focado mais em transcriptômica espacial e (infelizmente) ministrado apenas por mim. 
+Esse curso tem origem em um curso entitulado "Análise de Dados de Transcriptômica Single-Cell e Espacial" ministrado pela Dra. Carolina Saibro-Girardi e por mim, Flávio, durante o congresso X-meeting 2026. Lá, fui gentilmente convidado para ministrar o curso novamente. Dessa vez, porém, focado mais em transcriptômica espacial e (infelizmente) ministrado apenas por mim.
 
-De toda maneira, a estrutura do curso, apresentações e alguns códigos são oriundos (parcial ou majoritarimente) da primeira versão do curso. Por essa razão, alguns códigos, vinhetas e afins contam com o nome da Dra. Carol. Deixo aqui meu agradecimento à Carol, querida amiga, por ter inicialmente me convidado como por depois compartilhar o material do curso.
+De toda maneira, a estrutura do curso, apresentações e códigos são oriundos (parcial ou majoritarimente) da primeira versão do curso. Por essa razão, alguns documentos contam com o nome da Dra. Carol. *Deixo aqui meu agradecimento à Carol, querida amiga, por primeiro ter me convidado para participar da primeira versão como também por compartilhar o material do curso.*
 
 ## Licenças
 
