@@ -3,7 +3,7 @@ title: "Deconvolução de misturas celulares no conjunto Visium `stxBrain` com R
 author:
   - name: Flávio Gabriel Carazza-Kessler
 date: "2026-09-04"
-bibliography: bibliography.bib
+bibliography: ../bibliography.bib
 link-citations: true
 output:
   html_document:
@@ -99,16 +99,24 @@ Durante o curso, recomenda-se executar os blocos de código na ordem em que apar
 
 ## Estrutura esperada das pastas
 
-O conjunto `stxBrain` não precisa ser copiado para a pasta da vinheta. Ele será instalado pelo `SeuratData` na biblioteca de pacotes do R. O único arquivo de entrada local é `allen_cortex.rds`, que deve ficar em `data/`. Os resultados serão gravados em `results/`.
+O conjunto `stxBrain` não precisa ser copiado para o repositório. Ele será instalado pelo `SeuratData` na biblioteca de pacotes do R. O único arquivo de entrada local é `allen_cortex.rds`, que deve ficar em `data/`. Os resultados serão gravados em `resultados/`, as figuras em `imagens/` e a vinheta e o HTML permanecerão em `vinhetas/`.
 
 ``` text
-RCTD_Deconvolution_stxbrain/
-|-- RCTD_Deconvolution_stxbrain.Rmd
+Curso_ST/
+|-- README.md
 |-- bibliography.bib
+|-- apresentacoes/
 |-- data/
 |   `-- allen_cortex.rds
-`-- results/
+|-- imagens/
+|-- resultados/
+|-- scripts/
+`-- vinhetas/
+    |-- RCTD_Deconvolution_stxbrain.Rmd
+    `-- RCTD_Deconvolution_stxbrain.html
 ```
+
+O arquivo `bibliography.bib` é compartilhado por todas as vinhetas e deve permanecer na raiz do repositório. Por isso, o cabeçalho deste documento utiliza o caminho relativo `../bibliography.bib`.
 
 # Instalar os pacotes necessários
 
@@ -148,7 +156,7 @@ if (
 
 Depois da instalação, reinicie a sessão do R antes de continuar. Isso evita que uma versão do `spacexr` carregada anteriormente permaneça ativa na memória.
 
-# Informar manualmente o diretório da vinheta
+# Informar manualmente o diretório das vinhetas
 
 Para que cada bloco de código possa ser executado separadamente, a vinheta não tenta descobrir automaticamente onde o arquivo está salvo. Portanto, você deverá informar esse caminho uma única vez.
 
@@ -157,8 +165,8 @@ Siga estes passos:
 1.  Abra `RCTD_Deconvolution_stxbrain.Rmd` no RStudio.
 2.  Confirme que o diretório de trabalho é a pasta que contém esse arquivo. Se necessário, use o menu **Session \> Set Working Directory \> To Source File Location**.
 3.  Execute `getwd()` no Console ou no pequeno bloco abaixo.
-4.  O R mostrará algo semelhante a `[1] "D:/meu_curso/RCTD_Deconvolution_stxbrain"`.
-5.  Copie o caminho mostrado entre aspas e cole no lugar de `COLE_AQUI_O_DIRETORIO_DA_VINHETA` no bloco seguinte. No Windows, prefira barras `/`, como no exemplo, ou duplique cada barra invertida: `\\`.
+4.  O R mostrará algo semelhante a `[1] "D:/meu_curso/Curso_ST/vinhetas"`.
+5.  Copie o caminho mostrado entre aspas e cole no lugar de `COLE_AQUI_O_DIRETORIO_DAS_VINHETAS` no bloco seguinte. No Windows, prefira barras `/`, como no exemplo, ou duplique cada barra invertida: `\\`.
 
 `getwd()` apenas informa o diretório de trabalho atual. Antes de copiá-lo, confirme que essa é realmente a pasta onde está a vinheta.
 
@@ -169,34 +177,39 @@ getwd()
 Agora substitua o caminho entre aspas pelo caminho que você acabou de copiar e execute o bloco:
 
 ```{r definir-diretorios}
-diretorio_vinheta <- "COLE_AQUI_O_DIRETORIO_DA_VINHETA"
+diretorio_vinhetas <- "COLE_AQUI_O_DIRETORIO_DAS_VINHETAS"
 
-diretorio_vinheta <- normalizePath(
-  diretorio_vinheta,
+diretorio_vinhetas <- normalizePath(
+  diretorio_vinhetas,
   winslash = "/",
   mustWork = TRUE
 )
 
 arquivo_vinheta <- file.path(
-  diretorio_vinheta,
+  diretorio_vinhetas,
   "RCTD_Deconvolution_stxbrain.Rmd"
 )
 
 if (!file.exists(arquivo_vinheta)) {
   stop(
     "O arquivo RCTD_Deconvolution_stxbrain.Rmd não foi encontrado em: ",
-    diretorio_vinheta,
+    diretorio_vinhetas,
     "\nRevise o caminho copiado de getwd()."
   )
 }
 
-diretorio_dados <- file.path(diretorio_vinheta, "data")
-diretorio_resultados <- file.path(diretorio_vinheta, "results")
+diretorio_curso <- dirname(diretorio_vinhetas)
+diretorio_dados <- file.path(diretorio_curso, "data")
+diretorio_imagens <- file.path(diretorio_curso, "imagens")
+diretorio_resultados <- file.path(diretorio_curso, "resultados")
 
 dir.create(diretorio_dados, showWarnings = FALSE, recursive = TRUE)
+dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
 dir.create(diretorio_resultados, showWarnings = FALSE, recursive = TRUE)
 
+diretorio_curso
 diretorio_dados
+diretorio_imagens
 diretorio_resultados
 ```
 
@@ -572,24 +585,46 @@ invisible(gc())
 
 # Visualizar as classificações no tecido
 
-Primeiro, observe onde o RCTD identificou `singlet`, `doublet_certain`, `doublet_uncertain` ou `reject`.
+Primeiro, observe onde o RCTD identificou `singlet`, `doublet_certain`, `doublet_uncertain` ou `reject`. Ao executar os blocos manualmente, todas as figuras serão salvas como PNG em `imagens/`, com resolução moderada de 120 dpi.
 
 ```{r visualizar-classes-rctd}
-Seurat::SpatialDimPlot(
-  object = stxbrain,
+p_classes <- Seurat::SpatialDimPlot(
+  object = stxbrain_Seurat_com_RCTD,
   images = nome_imagem,
   group.by = "spot_class",
   pt.size.factor = 1.6,
   crop = TRUE
 ) +
   labs(title = "Classificação dos spots pelo RCTD")
+
+p_classes
+
+ggplot2::ggsave(
+  filename = file.path(
+    diretorio_imagens,
+    "rctd_classificacao_spots.png"
+  ),
+  plot = p_classes,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+
+rm(p_classes)
+invisible(gc())
 ```
+
+A figura abaixo foi produzida durante a execução manual validada da vinheta e é apresentada aqui como exemplo. Ela é incorporada ao HTML a partir do arquivo PNG já salvo, sem executar novamente o código.
+
+![Classificação dos spots pelo RCTD.](../imagens/rctd_classificacao_spots.png){width=85%}
 
 Em seguida, visualize o primeiro e o segundo tipo celular atribuídos. O segundo tipo deve ser interpretado somente junto com `spot_class`: ele é confiável quando o spot foi classificado como `doublet_certain`.
 
 ```{r visualizar-tipos-rctd, fig.width=12, fig.height=6}
 p1 <- Seurat::SpatialDimPlot(
-  object = stxbrain,
+  object = stxbrain_Seurat_com_RCTD,
   images = nome_imagem,
   group.by = "first_type",
   pt.size.factor = 1.6,
@@ -598,7 +633,7 @@ p1 <- Seurat::SpatialDimPlot(
   labs(title = "Primeiro tipo celular")
 
 p2 <- Seurat::SpatialDimPlot(
-  object = stxbrain,
+  object = stxbrain_Seurat_com_RCTD,
   images = nome_imagem,
   group.by = "second_type",
   pt.size.factor = 1.6,
@@ -606,8 +641,61 @@ p2 <- Seurat::SpatialDimPlot(
 ) +
   labs(title = "Segundo tipo celular")
 
-p1 + p2
+p_tipos <- p1 + p2
+p_tipos
+
+ggplot2::ggsave(
+  filename = file.path(
+    diretorio_imagens,
+    "rctd_primeiro_tipo_celular.png"
+  ),
+  plot = p1,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+
+ggplot2::ggsave(
+  filename = file.path(
+    diretorio_imagens,
+    "rctd_segundo_tipo_celular.png"
+  ),
+  plot = p2,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+
+ggplot2::ggsave(
+  filename = file.path(
+    diretorio_imagens,
+    "rctd_tipos_celulares_combinados.png"
+  ),
+  plot = p_tipos,
+  width = 10,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+
+rm(p1, p2, p_tipos)
+invisible(gc())
 ```
+
+Os mapas individuais permitem examinar com mais detalhe a distribuição espacial de cada atribuição.
+
+![Primeiro tipo celular atribuído a cada spot.](../imagens/rctd_primeiro_tipo_celular.png){width=85%}
+
+![Segundo tipo celular atribuído a cada spot.](../imagens/rctd_segundo_tipo_celular.png){width=85%}
+
+O painel combinado facilita a comparação direta entre o primeiro e o segundo tipo celular.
+
+![Comparação entre o primeiro e o segundo tipo celular atribuídos pelo RCTD.](../imagens/rctd_tipos_celulares_combinados.png){width=100%}
 
 # Salvar os resultados reutilizáveis
 
@@ -635,6 +723,8 @@ Os arquivos possuem finalidades complementares:
 - `stxbrain_RCTD_doublet_results.rds`: objeto completo produzido pelo RCTD;
 - `stxbrain_RCTD_doublet_spot_summary.csv`: classificação, primeiro e segundo tipos celulares e seus pesos por spot; e
 - `stxbrain_Seurat_com_RCTD.rds`: objeto Seurat com os resultados do RCTD no metadado.
+
+As figuras `rctd_classificacao_spots.png`, `rctd_primeiro_tipo_celular.png`, `rctd_segundo_tipo_celular.png` e `rctd_tipos_celulares_combinados.png` serão gravadas em `imagens/`.
 
 # Lista de verificação para interpretação
 
