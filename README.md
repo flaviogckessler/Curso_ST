@@ -61,6 +61,17 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 - [LinkedIn](https://www.linkedin.com/in/flaviogckessler)
 - Contato: [flaviokessler@ufpr.br](mailto:flaviokessler@ufpr.br)
 
+## Vinhetas
+
+- [Configuração do ambiente RStudio](vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
+- [Deconvolução com RCTD](vinhetas/RCTD_Deconvolution_stxbrain.html)
+
+## Histórico
+
+Esse curso tem origem em um curso entitulado "Análise de Dados de Transcriptômica Single-Cell e Espacial" ministrado pela Dra. Carolina Saibro-Girardi e por mim, Flávio, durante o congresso X-meeting 2026. Lá, fui gentilmente convidado para ministrar o curso novamente. Dessa vez, porém, focado mais em transcriptômica espacial e (infelizmente) ministrado apenas por mim. 
+
+De toda maneira, a estrutura do curso, apresentações e alguns códigos são oriundos (parcial ou majoritarimente) da primeira versão do curso. Por essa razão, alguns códigos, vinhetas e afins contam com o nome da Dra. Carol. Deixo aqui meu agradecimento à Carol, querida amiga, por ter inicialmente me convidado como por depois compartilhar o material do curso.
+
 ## Licenças
 
 O conteúdo de texto deste curso está disponível sob a licença [Creative Commons Atribuição-NãoComercial 4.0 Internacional (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.pt-br). Os códigos-fonte estão disponíveis sob a licença MIT. Consulte o arquivo [LICENSE.md](LICENSE.md) para os termos aplicáveis.
