@@ -1,0 +1,10 @@
+# Artefatos locais da conversão da apresentação (manter o PPTX versionado)
+/apresentacoes/Aula 1 - Introdução à transcriptômica espacial.md
+/apresentacoes/Aula 1 - Introdução à transcriptômica espacial.html
+/apresentacoes/Aula 1 - Introdução à transcriptômica espacial.pdf
+/apresentacoes/Aula 1 - Introdução à transcriptômica espacial - backup rasterizado.md
+/apresentacoes/aula-1-assets/
+/apresentacoes/aula-1-editable-assets/
+
+# Base de dados local muito grande
+/data/brain.RDS

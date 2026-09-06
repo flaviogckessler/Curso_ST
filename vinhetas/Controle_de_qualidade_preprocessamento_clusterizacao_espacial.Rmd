@@ -1,0 +1,456 @@
+---
+title: "Controle de qualidade, pré-processamento e clusterização de dados espaciais"
+author:
+  - name: Flávio Gabriel Carazza-Kessler
+  - name: Carolina Saibro-Girardi
+date: "2026-09-06"
+bibliography: ../bibliography.bib
+link-citations: true
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+params:
+  run_analysis: false
+---
+
+```{r configuracao, include=FALSE, purl=FALSE}
+executar_analise <- if (exists("params", inherits = FALSE)) {
+  isTRUE(params$run_analysis)
+} else {
+  TRUE
+}
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = executar_analise,
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 9,
+  fig.height = 6,
+  dev = "png",
+  dpi = 120,
+  message = TRUE,
+  warning = FALSE
+)
+```
+
+# Visão geral
+
+Nesta vinheta, duas seções sagitais de cérebro de camundongo produzidas com a tecnologia Visium são carregadas do conjunto `stxBrain`, reunidas em um objeto Seurat e submetidas a um fluxo direto de:
+
+1.  controle de qualidade dos spots;
+2.  normalização com `SCTransform()`;
+3.  redução de dimensionalidade;
+4.  clusterização não supervisionada; e
+5.  visualização dos clusters e de genes marcadores no tecido.
+
+Ao final, o objeto processado será salvo como `data/brain.RDS`. Todas as figuras serão gravadas em formato PNG na pasta `imagens/`.
+
+A versão HTML desta vinheta apresenta o roteiro sem executar a análise. Durante o curso, abra o arquivo `.Rmd` no RStudio e execute os blocos na ordem em que aparecem.
+
+# Preparar o ambiente
+
+## Definir as pastas de saída
+
+Antes de executar o código, defina o diretório de trabalho como a pasta `vinhetas/`. No RStudio, use **Session \> Set Working Directory \> To Source File Location**. Em seguida, execute:
+
+```{r definir-diretorios}
+diretorio_vinhetas <- getwd()
+diretorio_curso <- dirname(diretorio_vinhetas)
+diretorio_dados <- file.path(diretorio_curso, "data")
+diretorio_imagens <- file.path(diretorio_curso, "imagens")
+
+dir.create(diretorio_dados, showWarnings = FALSE, recursive = TRUE)
+dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
+```
+
+## Carregar os pacotes
+
+```{r carregar-pacotes}
+library("dplyr")
+library("Seurat")
+library("SeuratData")
+library("sctransform")
+library("ggplot2")
+library("patchwork")
+```
+
+O conjunto `stxBrain` é instalado na primeira utilização. Caso ele ainda não esteja disponível, execute o bloco abaixo uma única vez e reinicie a sessão do R.
+
+```{r instalar-stxbrain, eval=FALSE}
+if (requireNamespace("stxBrain.SeuratData", quietly = TRUE)) {
+  message("O conjunto stxBrain já está instalado.")
+} else {
+  limite_tempo_anterior <- getOption("timeout")
+
+  tryCatch(
+    {
+      options(timeout = max(600, limite_tempo_anterior))
+      SeuratData::InstallData("stxBrain")
+    },
+    finally = options(timeout = limite_tempo_anterior)
+  )
+}
+```
+
+# Carregar e reunir as seções espaciais
+
+Serão utilizadas uma seção anterior e uma seção posterior do cérebro de camundongo.
+
+```{r carregar-dados}
+brain1 <- SeuratData::LoadData("stxBrain", type = "anterior1")
+brain2 <- SeuratData::LoadData("stxBrain", type = "posterior1")
+
+brain <- merge(brain1, brain2)
+brain
+```
+
+A coluna `region`, incluída no conjunto de dados, identifica a região anatômica associada a cada spot. Com o código abaixo é possível identificar o número de spots em cada região (2696 na anterior e 3353 na posterior)
+
+```{r regioes}
+table(brain$region)
+```
+
+Número de features (genes) identificados no objeto brain (anterior+posterior):
+
+```{r nmr-genes}
+dim(brain)[1]
+#31053
+```
+
+# Controle de qualidade dos spots
+
+As métricas principais são:
+
+-   `nCount_Spatial`: número total de transcritos detectados no spot;
+-   `nFeature_Spatial`: número de genes detectados; e
+-   `percent.mt`: porcentagem de transcritos provenientes de genes mitocondriais.
+
+```{r calcular-percentual-mitocondrial}
+brain[["percent.mt"]] <- Seurat::PercentageFeatureSet(
+  brain,
+  pattern = "^mt-"
+)
+```
+
+## Número de transcritos
+
+```{r qc-contagens, fig.width=11, fig.height=7}
+vln_contagens <- VlnPlot(
+  brain,
+  features = "nCount_Spatial",
+  pt.size = 0
+) + NoLegend()
+
+mapa_contagens_anterior <- SpatialFeaturePlot(
+  brain,
+  features = "nCount_Spatial",
+  images = "anterior1"
+)
+
+mapa_contagens_posterior <- SpatialFeaturePlot(
+  brain,
+  features = "nCount_Spatial",
+  images = "posterior1"
+)
+
+painel_contagens <- vln_contagens /
+  (mapa_contagens_anterior | mapa_contagens_posterior) +
+  plot_annotation(title = "Transcritos por spot")
+
+painel_contagens
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_SpotQC_contagens.png"),
+  plot = painel_contagens,
+  width = 11,
+  height = 7,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+```
+
+## Número de genes
+
+```{r qc-genes, fig.width=11, fig.height=7}
+vln_genes <- VlnPlot(
+  brain,
+  features = "nFeature_Spatial",
+  pt.size = 0
+) + NoLegend()
+
+mapa_genes_anterior <- SpatialFeaturePlot(
+  brain,
+  features = "nFeature_Spatial",
+  images = "anterior1"
+)
+
+mapa_genes_posterior <- SpatialFeaturePlot(
+  brain,
+  features = "nFeature_Spatial",
+  images = "posterior1"
+)
+
+painel_genes <- vln_genes /
+  (mapa_genes_anterior | mapa_genes_posterior) +
+  plot_annotation(title = "Genes detectados por spot")
+
+painel_genes
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_SpotQC_genes.png"),
+  plot = painel_genes,
+  width = 11,
+  height = 7,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+```
+
+## Porcentagem mitocondrial
+
+```{r qc-mitocondrial, fig.width=11, fig.height=7}
+vln_mitocondrial <- VlnPlot(
+  brain,
+  features = "percent.mt",
+  pt.size = 0
+) + NoLegend()
+
+mapa_mt_anterior <- SpatialFeaturePlot(
+  brain,
+  features = "percent.mt",
+  images = "anterior1"
+)
+
+mapa_mt_posterior <- SpatialFeaturePlot(
+  brain,
+  features = "percent.mt",
+  images = "posterior1"
+)
+
+painel_mitocondrial <- vln_mitocondrial /
+  (mapa_mt_anterior | mapa_mt_posterior) +
+  plot_annotation(title = "Porcentagem mitocondrial por spot")
+
+painel_mitocondrial
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_SpotQC_mitocondrial.png"),
+  plot = painel_mitocondrial,
+  width = 11,
+  height = 7,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+```
+
+Neste conjunto didático, o perfil das métricas é utilizado para inspeção e nenhum limiar adicional de filtragem será aplicado.
+
+Caso você queira filtrar de acordo com alguma parâmetro dos metadados, corra o código abaixo. Para essa vinheta, ele é OPCIONAL, então é possível pulá-lo. Nessa exemplo é aplicado um filtro que passam apenas spots que tenham mais de 200 genes identificados; que possuam mais de 500 counts; e que possuam mais de 5% de mitocôndria.
+
+```{r filtragem-opcional, message=FALSE}
+brain_filt <- subset(brain, subset = nFeature_Spatial > 200 &
+                       nCount_Spatial > 500 & 
+                       percent.mt > 5)
+print("ANTES DE FILTRAR")
+print(paste("Número de spots:",dim(brain)[2]))
+print(paste("Número de genes:",dim(brain)[1]))
+
+table(brain$region)
+print("DEPOIS DE FILTRAR")
+print(paste("Número de spots:",dim(brain_filt)[2]))
+print(paste("Número de genes:",dim(brain_filt)[1]))
+
+table(brain_filt$region)
+```
+Com esse exemplo, foram excluídos 11 spots da região anterior e 298 da região posterior. Para comparar os novos parâmetros, rode os gráficos acima com o dado filtrado `brain_filt`.
+
+# Pré-processamento e clusterização
+
+`SCTransform()` normaliza os dados e estabiliza a variância. Em seguida, os componentes principais são utilizados para construir UMAP, t-SNE, grafo de vizinhança e clusters.
+
+Essas etapas são as mais demoradas da vinheta, principalmente SCTransform(). Curiosidade: ao rodar, será mostrado o tempo que levou para rodar as análises no seu computador.
+
+```{r preprocessar-clusterizar}
+set.seed(20260906)
+
+inicio <- Sys.time()
+
+brain <- SCTransform(
+  brain,
+  assay = "Spatial",
+  do.scale = TRUE,
+  return.only.var.genes = FALSE,
+  verbose = FALSE
+)
+
+fim <- Sys.time()
+tempo <- fim - inicio
+tempo
+
+inicio <- Sys.time()
+
+brain <- RunPCA(brain, verbose = FALSE)
+brain <- RunUMAP(brain, dims = 1:10)
+brain <- RunTSNE(brain, dims = 1:10)
+brain <- FindNeighbors(brain, dims = 1:10)
+brain <- FindClusters(brain, verbose = FALSE)
+
+fim <- Sys.time()
+tempo <- fim - inicio
+tempo
+```
+
+O objeto processado é salvo na pasta `data/`, onde poderá ser reutilizado nas análises seguintes do curso.
+
+```{r salvar-brain}
+saveRDS(
+  brain,
+  file = file.path(diretorio_dados, "brain.RDS")
+)
+```
+
+# Visualizar os clusters
+
+## UMAP e t-SNE
+
+```{r reducoes-dimensionais, fig.width=11, fig.height=5}
+umap_brain <- DimPlot(brain, reduction = "umap") +
+  labs(title = "UMAP")
+
+tsne_brain <- DimPlot(brain, reduction = "tsne") +
+  labs(title = "t-SNE")
+
+painel_reducoes <- umap_brain | tsne_brain
+painel_reducoes
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_clustering_reducoes.png"),
+  plot = painel_reducoes,
+  width = 11,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+```
+
+## Distribuição espacial
+
+```{r clusters-no-tecido, fig.width=11, fig.height=5}
+mapa_clusters <- SpatialDimPlot(brain) +
+  plot_annotation(title = "Distribuição espacial dos clusters")
+
+mapa_clusters
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_clustering_espacial.png"),
+  plot = mapa_clusters,
+  width = 11,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+```
+
+## Composição das seções
+
+```{r composicao-clusters, fig.width=10, fig.height=5}
+distribuicao_clusters <- as.data.frame(
+  table(brain$seurat_clusters, brain$orig.ident)
+)
+colnames(distribuicao_clusters) <- c("Cluster", "Secao", "Spots")
+
+p_numero_spots <- ggplot(
+  distribuicao_clusters,
+  aes(x = Secao, y = Spots, fill = Cluster)
+) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "Seção", y = "Número de spots")
+
+p_proporcao_spots <- ggplot(
+  distribuicao_clusters,
+  aes(x = Secao, y = Spots, fill = Cluster)
+) +
+  geom_col(position = "fill") +
+  coord_flip() +
+  labs(x = "Seção", y = "Proporção de spots")
+
+painel_composicao <- p_numero_spots | p_proporcao_spots
+painel_composicao
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_clustering_composicao.png"),
+  plot = painel_composicao,
+  width = 10,
+  height = 5,
+  units = "in",
+  dpi = 120,
+  bg = "white"
+)
+```
+
+# Visualizar genes representativos
+
+Os genes abaixo destacam populações neuronais e não neuronais presentes no tecido. Sua distribuição ajuda a relacionar os clusters aos compartimentos anatômicos, mas não substitui uma anotação celular completa.
+
+```{r expressao-genes, fig.width=12, fig.height=18}
+genes <- c(
+  "Hpca", "Nrgn", # neurônios
+  "Plp1",         # oligodendrócitos
+  "Aif1",         # micróglia
+  "Gfap",         # astrócitos
+  "Ttr",          # células do plexo coroide
+  "Mgp"           # fibroblastos
+)
+
+painel_genes_marcadores <- SpatialFeaturePlot(
+  brain,
+  features = genes,
+  ncol = 2
+)
+
+painel_genes_marcadores
+
+ggsave(
+  filename = file.path(diretorio_imagens, "Brain_Genes.png"),
+  plot = painel_genes_marcadores,
+  width = 12,
+  height = 18,
+  units = "in",
+  dpi = 120,
+  bg = "white",
+  limitsize = FALSE
+)
+```
+
+# Arquivos produzidos
+
+Ao concluir a vinheta, os seguintes arquivos estarão disponíveis:
+
+-   `data/brain.RDS`: objeto Seurat normalizado, reduzido e clusterizado;
+-   `imagens/Brain_SpotQC_contagens.png`;
+-   `imagens/Brain_SpotQC_genes.png`;
+-   `imagens/Brain_SpotQC_mitocondrial.png`;
+-   `imagens/Brain_clustering_reducoes.png`;
+-   `imagens/Brain_clustering_espacial.png`;
+-   `imagens/Brain_clustering_composicao.png`; e
+-   `imagens/Brain_Genes.png`.
+
+# Informações da sessão
+
+```{r informacoes-sessao}
+sessionInfo()
+```
+
+# Referências
