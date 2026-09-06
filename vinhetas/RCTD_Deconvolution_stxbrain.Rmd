@@ -46,9 +46,9 @@ O objeto espacial será obtido diretamente pelo pacote `SeuratData`, usando a se
 
 Ao final do roteiro, você será capaz de:
 
-1.  explicar por que a deconvolução requer uma referência unicelular anotada;
+1.  explicar por que a deconvolução requer uma referência single-cell anotada;
 2.  obter do `SeuratData` as contagens brutas e as coordenadas do Visium;
-3.  preparar a referência unicelular do córtex de camundongo do Allen Institute [@Tasic2016];
+3.  preparar a referência single-cell do córtex de camundongo do Allen Institute [@Tasic2016];
 4.  executar o RCTD no modo `doublet`;
 5.  inspecionar e visualizar as proporções estimadas; e
 6.  acrescentar a anotação dominante ao objeto Seurat original.
@@ -64,14 +64,14 @@ A análise possui duas entradas e uma saída principal:
 | Componente | Objeto utilizado | Informação necessária |
 |------------------------|------------------------|------------------------|
 | Amostra espacial | `stxBrain`, seção `anterior1`, carregada por `SeuratData` | contagens brutas de genes por spots e coordenadas dos spots |
-| Referência unicelular | córtex de camundongo do Allen Institute | contagens brutas de genes por células e um rótulo de tipo celular por célula |
+| Referência single-cell | córtex de camundongo do Allen Institute | contagens brutas de genes por células e um rótulo de tipo celular por célula |
 | Resultado do RCTD | objeto da classe `RCTD` | classificação e pesos de até dois tipos celulares por spot |
 
 O `spacexr` oferece três modos:
 
--   `doublet`: ajusta no máximo dois tipos celulares por spot;
--   `multi`: ajusta até `MAX_MULTI_TYPES` tipos celulares por spot; e
--   `full`: não impõe um limite fixo ao número de tipos celulares.
+- `doublet`: ajusta no máximo dois tipos celulares por spot;
+- `multi`: ajusta até `MAX_MULTI_TYPES` tipos celulares por spot; e
+- `full`: não impõe um limite fixo ao número de tipos celulares.
 
 Usaremos o modo `doublet`, mantendo a configuração já validada no servidor. Nesse modo, o RCTD atribui um ou dois tipos celulares a cada spot. Isso é uma simplificação do modelo e não significa que um spot Visium contenha, biologicamente, no máximo duas células ou dois tipos celulares.
 
@@ -79,17 +79,19 @@ Usaremos o modo `doublet`, mantendo a configuração já validada no servidor. N
 
 ## Requisitos computacionais
 
--   R e, preferencialmente, RStudio;
--   pelo menos 16 GB de memória RAM;
--   acesso à internet para a primeira instalação dos pacotes e dos dados; e
--   de alguns minutos a mais de uma hora para executar o RCTD completo, dependendo do computador e do número de tipos celulares da referência.
+- R e, preferencialmente, RStudio;
+- no mínimo 20 GB de memória RAM, embora uma quantidade maior seja recomendada;
+- acesso à internet para a primeira instalação dos pacotes e dos dados; e
+- múltiplos núcleos de CPU para reduzir o tempo de execução, quando disponíveis.
 
-A versão HTML desta vinheta pode ser criada sem executar a análise. Para renderizar e executar todo o fluxo, use:
+Como referência de desempenho, a execução validada para este material levou 14,22 minutos em um servidor de alta performance com 160 GB de RAM e 30 núcleos de CPU disponíveis para processamento paralelo. O tempo pode variar bastante de acordo com o equipamento, a carga do servidor e o número de tipos celulares da referência. O parâmetro `max_cores` controla o paralelismo na CPU; esta análise não utiliza aceleração por GPU.
+
+A versão HTML desta vinheta apresenta o texto e os blocos de código, mas não executa a análise nem exibe resultados. Para gerar essa versão, use:
 
 ```{r renderizar-vinheta, eval=FALSE}
 rmarkdown::render(
   "RCTD_Deconvolution_stxbrain.Rmd",
-  params = list(run_analysis = TRUE)
+  params = list(run_analysis = FALSE)
 )
 ```
 
@@ -156,7 +158,7 @@ Siga estes passos:
 2.  Confirme que o diretório de trabalho é a pasta que contém esse arquivo. Se necessário, use o menu **Session \> Set Working Directory \> To Source File Location**.
 3.  Execute `getwd()` no Console ou no pequeno bloco abaixo.
 4.  O R mostrará algo semelhante a `[1] "D:/meu_curso/RCTD_Deconvolution_stxbrain"`.
-5.  Copie o caminho mostrado entre aspas e substitua o caminho de exemplo no bloco seguinte. No Windows, prefira barras `/`, como no exemplo, ou duplique cada barra invertida: `\\`.
+5.  Copie o caminho mostrado entre aspas e cole no lugar de `COLE_AQUI_O_DIRETORIO_DA_VINHETA` no bloco seguinte. No Windows, prefira barras `/`, como no exemplo, ou duplique cada barra invertida: `\\`.
 
 `getwd()` apenas informa o diretório de trabalho atual. Antes de copiá-lo, confirme que essa é realmente a pasta onde está a vinheta.
 
@@ -167,7 +169,7 @@ getwd()
 Agora substitua o caminho entre aspas pelo caminho que você acabou de copiar e execute o bloco:
 
 ```{r definir-diretorios}
-diretorio_vinheta <- "/home/flaviok/RCTD_Curso"
+diretorio_vinheta <- "COLE_AQUI_O_DIRETORIO_DA_VINHETA"
 
 diretorio_vinheta <- normalizePath(
   diretorio_vinheta,
@@ -352,7 +354,7 @@ arquivo_referencia <- file.path(diretorio_dados, "allen_cortex.rds")
 
 if (!file.exists(arquivo_referencia)) {
   stop(
-    "A referência unicelular não foi encontrada em: ",
+    "A referência single-cell não foi encontrada em: ",
     arquivo_referencia,
     "\nBaixe o arquivo como descrito acima ou copie o arquivo fornecido pelo instrutor para data/."
   )
@@ -420,7 +422,7 @@ genes_comuns <- intersect(
 )
 
 resumo_genes <- data.frame(
-  fonte = c("amostra espacial", "referência unicelular", "interseção"),
+  fonte = c("amostra espacial", "referência single-cell", "interseção"),
   numero_de_genes = c(
     nrow(contagens_espaciais),
     nrow(contagens_referencia),
@@ -484,12 +486,12 @@ invisible(gc())
 
 ## Criar o objeto RCTD
 
-`create.RCTD()` prepara os dados, seleciona genes informativos e aprende os perfis dos tipos celulares da referência. O servidor utilizado no curso permite trabalhar com 30 núcleos. Em outro computador, ajuste `numero_nucleos` para um valor adequado à máquina disponível.
+`create.RCTD()` prepara os dados, seleciona genes informativos e aprende os perfis dos tipos celulares da referência. O servidor utilizado no curso possui 30 núcleos de CPU; o código reserva dois para o sistema e utiliza 28 na análise. Em outro computador, ajuste `numero_nucleos` para um valor adequado à máquina disponível.
 
 ```{r criar-rctd}
 set.seed(20260904)
 
-numero_nucleos <- 30L
+numero_nucleos <- 28
 
 RCTD <- spacexr::create.RCTD(
   consulta_rctd,
@@ -630,9 +632,9 @@ saveRDS(
 
 Os arquivos possuem finalidades complementares:
 
--   `stxbrain_RCTD_doublet_results.rds`: objeto completo produzido pelo RCTD;
--   `stxbrain_RCTD_doublet_spot_summary.csv`: classificação, primeiro e segundo tipos celulares e seus pesos por spot; e
--   `stxbrain_Seurat_com_RCTD.rds`: objeto Seurat com os resultados do RCTD no metadado.
+- `stxbrain_RCTD_doublet_results.rds`: objeto completo produzido pelo RCTD;
+- `stxbrain_RCTD_doublet_spot_summary.csv`: classificação, primeiro e segundo tipos celulares e seus pesos por spot; e
+- `stxbrain_Seurat_com_RCTD.rds`: objeto Seurat com os resultados do RCTD no metadado.
 
 # Lista de verificação para interpretação
 
@@ -644,43 +646,6 @@ Antes de formular conclusões biológicas, verifique:
 4.  **As previsões são espacialmente plausíveis?** Populações esperadas no córtex e na substância branca devem formar padrões anatômicos coerentes, em vez de pontos dispersos aleatoriamente.
 
 As atribuições e os pesos do RCTD são estimativas baseadas em um modelo. Eles não correspondem diretamente ao número de células presentes no spot.
-
-# Exercícios sugeridos
-
-1.  Compare os mapas de `first_type` e `second_type`.
-2.  Conte quantos spots foram classificados em cada categoria de `spot_class`.
-3.  Escolha uma população neuronal e uma população glial e compare suas localizações.
-4.  Compare as atribuições do RCTD com estruturas anatômicas visíveis na imagem histológica.
-
-# Solução de problemas
-
-## “Counts must be integers”
-
-Provavelmente foi fornecida uma matriz normalizada. Para a amostra espacial, extraia `layer = "counts"` do ensaio `Spatial`; para a referência, extraia `layer = "counts"` do ensaio `RNA`.
-
-## `create.RCTD()` não foi encontrada
-
-Provavelmente está carregada a versão do Bioconductor. Execute novamente o bloco de instalação, que instala `dmcable/spacexr` pelo GitHub, e reinicie a sessão do R.
-
-## Não foi possível instalar o `stxBrain`
-
-O conjunto é grande e o download pode falhar em uma conexão instável. Execute novamente apenas o bloco **Instalar o conjunto de dados**. Se o erro persistir, confirme que o R possui acesso à internet e que existe espaço em disco na biblioteca de pacotes.
-
-## Há poucas células de referência para um tipo celular
-
-Por padrão, o RCTD exige pelo menos 25 células por tipo. Una subclasses raras apenas quando isso for biologicamente justificável ou remova-as de forma explícita. Não duplique células para aumentar artificialmente o grupo.
-
-## Há poucos genes compartilhados
-
-Confirme que ambos os conjuntos pertencem ao mesmo organismo e usam o mesmo sistema de identificadores gênicos. Se necessário, converta identificadores Ensembl em símbolos gênicos, tratando explicitamente os símbolos duplicados.
-
-## As contagens e as coordenadas não possuem spots em comum
-
-Compare `colnames(contagens_espaciais)` com `rownames(coordenadas_espaciais)`. Não tente alinhar esses objetos apenas pela posição das colunas ou linhas.
-
-## A análise está lenta ou utiliza muita memória
-
-Reduza `numero_nucleos` se o servidor limitar a criação de processos paralelos. Em demonstrações, uma região espacial pode ser analisada separadamente, desde que as limitações biológicas e estatísticas dessa seleção sejam discutidas.
 
 # Informações da sessão
 
