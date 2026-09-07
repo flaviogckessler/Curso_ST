@@ -1582,8 +1582,10 @@ o ambiente do RStudio e instalar previamente os pacotes que serão
 utilizados nas aulas.</p>
 <p>Os pacotes são organizados conforme sua origem — CRAN, Bioconductor
 ou GitHub — e cada instalação somente é executada quando o pacote ainda
-não está disponível. Dessa forma, você pode executar novamente os blocos
-sem reinstalar desnecessariamente os pacotes que já possui.</p>
+não está disponível ou não atende à versão mínima necessária. As
+dependências transitivas são resolvidas pelos próprios instaladores.
+Dessa forma, você pode executar novamente os blocos sem reinstalar
+desnecessariamente os pacotes que já possui.</p>
 <p>Caso você não possua a maioria desses pacotes instalados, o processo
 todo pode demorar algum tempo. Por favor, mantenha atenção às mensagens
 de erro para evitar que algum pacote não tenha sido apropriadamente
@@ -1594,15 +1596,14 @@ suficientes para gravar na biblioteca de pacotes. Após concluir todas as
 instalações, reinicie a sessão do R antes de continuar o curso.</p>
 </blockquote>
 </div>
-<div id="parte-1-interagir-com-o-rstudio" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Parte 1: interagir com
-o RStudio</h1>
+<div id="interagir-com-o-rstudio" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Interagir com o
+RStudio</h1>
 <div id="conferir-o-diretório-de-trabalho" class="section level2" number="2.1">
 <h2><span class="header-section-number">2.1</span> Conferir o diretório
 de trabalho</h2>
 <p>O comando abaixo mostra o diretório de trabalho atual:</p>
-<pre class="r"><code>getwd()
-#&gt; [1] &quot;D:/SpatialTranscriptomic_Doc/Congressos_Eventos/Curso_RSGBrasil/GitHub/Curso_ST/vinhetas&quot;</code></pre>
+<pre class="r"><code>getwd()</code></pre>
 <p>Se necessário, crie e defina outro diretório de trabalho. Substitua o
 caminho do exemplo por aquele que será utilizado no curso.</p>
 <pre class="r"><code># novo_diretorio &lt;- &quot;~/curso_transcriptomica&quot;
@@ -1612,66 +1613,61 @@ caminho do exemplo por aquele que será utilizado no curso.</p>
 <div id="conferir-os-arquivos-disponíveis" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Conferir os arquivos
 disponíveis</h2>
-<pre class="r"><code>list.files()
-#&gt; [1] &quot;DOC1_Configuracao_do_ambiente_RStudio.html&quot; &quot;DOC1_Configuracao_do_ambiente_RStudio.Rmd&quot; 
-#&gt; [3] &quot;RCTD_Deconvolution_stxbrain.html&quot;           &quot;RCTD_Deconvolution_stxbrain.Rmd&quot;</code></pre>
+<pre class="r"><code>list.files()</code></pre>
 </div>
 <div id="conferir-a-biblioteca-de-pacotes" class="section level2" number="2.3">
 <h2><span class="header-section-number">2.3</span> Conferir a biblioteca
 de pacotes</h2>
 <p>O R procura e instala pacotes nos diretórios mostrados por:</p>
-<pre class="r"><code>.libPaths()
-#&gt; [1] &quot;C:/Users/flavi/AppData/Local/R/win-library/4.5&quot; &quot;C:/Program Files/R/R-4.5.3/library&quot;</code></pre>
+<pre class="r"><code>.libPaths()</code></pre>
 </div>
 </div>
-<div id="parte-2-instalar-os-pacotes-do-curso" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Parte 2: instalar os
-pacotes do curso</h1>
+<div id="instalar-os-pacotes-do-curso" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Instalar os pacotes do
+curso</h1>
 <p>Execute os próximos blocos na ordem apresentada. Dependendo da
 conexão com a internet e do computador utilizado, a primeira instalação
-pode demorar vários minutos.</p>
+pode demorar vários minutos. As versões atuais do
+<code>RGraphSpace</code> e do <code>PathwaySpace</code> requerem R 4.5.0
+ou mais recente; o primeiro bloco interrompe a instalação com uma
+mensagem clara caso a versão do R precise ser atualizada.</p>
 <div id="pacotes-do-cran" class="section level2" number="3.1">
 <h2><span class="header-section-number">3.1</span> Pacotes do CRAN</h2>
-<p>Este bloco instala os pacotes distribuídos pelo CRAN. A instalação do
-<code>Seurat</code> segue a forma adotada na vinheta de RCTD: é
-utilizada a versão atual disponível no CRAN, sem fixar uma versão
-específica. Se houver uma versão anterior à 5.0.0, ela será
-atualizada.</p>
-<pre class="r"><code>pacotes_cran &lt;- c(
-  &quot;Seurat&quot;,&quot;SeuratObject&quot;,&quot;sctransform&quot;,&quot;tidyverse&quot;,&quot;dplyr&quot;,&quot;ggplot2&quot;,
-  &quot;patchwork&quot;,&quot;gridExtra&quot;,&quot;openxlsx&quot;,&quot;devtools&quot;,&quot;remotes&quot;,&quot;BiocManager&quot;,
-  &quot;knitr&quot;,&quot;rmarkdown&quot;,&quot;aplot&quot;,&quot;circlize&quot;, &quot;cowplot&quot;,&quot;data.table&quot;, &quot;doParallel&quot;,
-  &quot;doRNG&quot;,&quot;ggfun&quot;,&quot;gghalves&quot;,&quot;ggplotify&quot;, &quot;ggridges&quot;,&quot;ggsci&quot;, &quot;irlba&quot;,&quot;magrittr&quot;,
-  &quot;Matrix&quot;,&quot;msigdbr&quot;, &quot;plyr&quot;,&quot;pointr&quot;,&quot;purrr&quot;,&quot;RcppML&quot;,&quot;reshape2&quot;,&quot;reticulate&quot;,
-  &quot;rlang&quot;,&quot;RMTstat&quot;,&quot;RobustRankAggreg&quot;,&quot;roxygen2&quot;,&quot;stringr&quot;)
+<p>Este bloco instala somente os pacotes do CRAN chamados diretamente
+pelas vinhetas ou necessários para instalar e compilar o material. O
+<code>Seurat</code> e o <code>SeuratObject</code> devem estar na série 5
+ou mais recente.</p>
+<pre class="r"><code>if (getRversion() &lt; package_version(&quot;4.5.0&quot;)) {
+  stop(
+    &quot;Este curso requer R 4.5.0 ou mais recente por causa do &quot;,
+    &quot;RGraphSpace e do PathwaySpace. Atualize o R antes de continuar.&quot;
+  )
+}
+
+pacotes_cran &lt;- c(
+  &quot;Seurat&quot;, &quot;SeuratObject&quot;, &quot;sctransform&quot;, &quot;dplyr&quot;, &quot;tibble&quot;, &quot;tidyr&quot;,
+  &quot;ggplot2&quot;, &quot;patchwork&quot;, &quot;gridExtra&quot;, &quot;RANN&quot;, &quot;future&quot;, &quot;Matrix&quot;,
+  &quot;knitr&quot;, &quot;rmarkdown&quot;, &quot;remotes&quot;, &quot;BiocManager&quot;
+)
+
+versoes_minimas_cran &lt;- c(
+  Seurat = &quot;5.0.0&quot;,
+  SeuratObject = &quot;5.0.0&quot;
+)
 
 for (pacote in pacotes_cran) {
   precisa_instalar &lt;- !requireNamespace(pacote, quietly = TRUE)
 
   if (
-    pacote == &quot;Seurat&quot; &amp;&amp;
+    pacote %in% names(versoes_minimas_cran) &amp;&amp;
     !precisa_instalar &amp;&amp;
-    packageVersion(&quot;Seurat&quot;) &lt; package_version(&quot;5.0.0&quot;)
+    packageVersion(pacote) &lt; package_version(versoes_minimas_cran[[pacote]])
   ) {
     precisa_instalar &lt;- TRUE
   }
 
   if (precisa_instalar) {
-    install.packages(pacote, dependencies = TRUE)
-  }
-}</code></pre>
-<p>O pacote <code>doMC</code>, utilizado como dependência em sistemas
-compatíveis, é disponibilizado pelo R-Forge. Ele permanece em um laço
-separado porque utiliza um repositório diferente do CRAN.</p>
-<pre class="r"><code>pacotes_rforge &lt;- c(&quot;doMC&quot;)
-
-for (pacote in pacotes_rforge) {
-  if (!requireNamespace(pacote, quietly = TRUE)) {
-    install.packages(
-      pacote,
-      repos = &quot;https://R-Forge.R-project.org&quot;,
-      dependencies = TRUE
-    )
+    install.packages(pacote, dependencies = NA)
   }
 }</code></pre>
 </div>
@@ -1679,82 +1675,72 @@ for (pacote in pacotes_rforge) {
 <h2><span class="header-section-number">3.2</span> Pacotes do
 Bioconductor</h2>
 <p>O <code>BiocManager</code>, instalado no bloco anterior, é utilizado
-para obter os pacotes do Bioconductor.</p>
-<pre class="r"><code>pacotes_bioconductor &lt;- c(
-  &quot;glmGamPoi&quot;,&quot;MAST&quot;,&quot;AUCell&quot;,&quot;BiocParallel&quot;,&quot;ComplexHeatmap&quot;,&quot;decoupleR&quot;,
-  &quot;fgsea&quot;,&quot;ggtree&quot;,&quot;GSEABase&quot;,&quot;Nebulosa&quot;,&quot;scde&quot;,&quot;SummarizedExperiment&quot;,
-  &quot;sparseMatrixStats&quot;,&quot;GSVA&quot;,&quot;singscore&quot;,&quot;UCell&quot;
-)
+para obter as dependências do Bioconductor exigidas pelo
+<code>CellChat</code>.</p>
+<pre class="r"><code>pacotes_bioconductor &lt;- c(&quot;BiocGenerics&quot;, &quot;BiocNeighbors&quot;, &quot;ComplexHeatmap&quot;)
 
 for (pacote in pacotes_bioconductor) {
   if (!requireNamespace(pacote, quietly = TRUE)) {
     BiocManager::install(
       pacote,
       ask = FALSE,
-      update = FALSE
-    )
-  }
-}</code></pre>
+      update = FALSE)}}</code></pre>
 </div>
 <div id="pacotes-do-github" class="section level2" number="3.3">
 <h2><span class="header-section-number">3.3</span> Pacotes do
 GitHub</h2>
 <p>Este bloco instala os pacotes obtidos diretamente do GitHub. O
-<code>SeuratData</code> permite acessar conjuntos de dados do Seurat,
-enquanto o <code>spacexr</code> fornece a implementação do RCTD
-utilizada no curso.</p>
-<p>A instalação do <code>spacexr</code> segue a configuração da vinheta
-de RCTD: as vinhetas do próprio pacote não são compiladas e as demais
-dependências instaladas não são atualizadas. Além de verificar a
-presença do pacote, o código confirma que a função
-<code>create.RCTD()</code> está disponível, evitando o uso acidental de
-uma interface incompatível.</p>
+<code>SeuratData</code> permite acessar conjuntos de dados do Seurat; o
+<code>CellChat</code> é usado na inferência de comunicação celular; o
+<code>RGraphSpace</code> e o <code>PathwaySpace</code> sustentam as
+projeções espaciais; e o <code>spacexr</code> fornece a implementação do
+RCTD utilizada no curso.</p>
+<p>As vinhetas internas desses pacotes não são compiladas, pois não são
+necessárias para o curso. Somente as dependências obrigatórias são
+instaladas e os demais pacotes já presentes não são atualizados em
+bloco. Para <code>RGraphSpace</code>, <code>PathwaySpace</code> e
+<code>spacexr</code>, o código também exige as versões mínimas
+compatíveis com este material. No caso do <code>spacexr</code>, a
+presença da função <code>create.RCTD()</code> é confirmada para evitar o
+uso acidental de uma interface incompatível.</p>
 <pre class="r"><code>repositorios_github &lt;- c(
-  SeuratData = &quot;satijalab/seurat-data&quot;,
-  gghalves = &quot;erocoar/gghalves&quot;,
-  irGSEA = &quot;chuiqin/irGSEA&quot;,
-  spacexr = &quot;dmcable/spacexr&quot;
-)
+  SeuratData = &quot;satijalab/seurat-data&quot;, CellChat = &quot;jinworks/CellChat&quot;,
+  RGraphSpace = &quot;sysbiolab/RGraphSpace&quot;, PathwaySpace = &quot;sysbiolab/PathwaySpace&quot;,
+  spacexr = &quot;dmcable/spacexr&quot;)
+
+versoes_minimas_github &lt;- c(RGraphSpace = &quot;1.5.2&quot;,PathwaySpace = &quot;1.5.1&quot;,spacexr = &quot;2.2.1&quot;)
 
 for (pacote in names(repositorios_github)) {
   precisa_instalar &lt;- !requireNamespace(pacote, quietly = TRUE)
 
   if (
-    pacote == &quot;spacexr&quot; &amp;&amp;
+    pacote %in% names(versoes_minimas_github) &amp;&amp;
     !precisa_instalar &amp;&amp;
+    packageVersion(pacote) &lt; package_version(versoes_minimas_github[[pacote]])
+  ) {precisa_instalar &lt;- TRUE}
+
+  if (
+    pacote == &quot;spacexr&quot; &amp;&amp; !precisa_instalar &amp;&amp;
     !exists(
-      &quot;create.RCTD&quot;,
-      envir = asNamespace(&quot;spacexr&quot;),
-      inherits = FALSE
-    )
-  ) {
-    precisa_instalar &lt;- TRUE
-  }
+      &quot;create.RCTD&quot;, envir = asNamespace(&quot;spacexr&quot;),inherits = FALSE)){
+    precisa_instalar &lt;- TRUE}
 
   if (precisa_instalar) {
-    if (pacote == &quot;spacexr&quot;) {
-      remotes::install_github(
-        repositorios_github[[pacote]],
-        build_vignettes = FALSE,
-        upgrade = &quot;never&quot;
-      )
-    } else {
-      remotes::install_github(repositorios_github[[pacote]])
-    }
-  }
-}</code></pre>
+    remotes::install_github(
+      repositorios_github[[pacote]],
+      dependencies = NA,
+      build_vignettes = FALSE,
+      upgrade = &quot;never&quot;)}}</code></pre>
 </div>
 <div id="pacote-de-dados-do-seuratdata" class="section level2" number="3.4">
 <h2><span class="header-section-number">3.4</span> Pacote de dados do
 <code>SeuratData</code></h2>
-<p>O conjunto espacial <code>stxBrain</code>, utilizado na vinheta de
-RCTD, é distribuído como um pacote de dados separado. Para que o
-download não seja necessário durante a análise, o próximo bloco também o
-instala antecipadamente. O procedimento é o mesmo utilizado na vinheta
-de RCTD e pode demorar alguns minutos na primeira execução.</p>
-<pre class="r"><code>pacotes_dados_seurat &lt;- c(
-  stxBrain.SeuratData = &quot;stxBrain&quot;
-)
+<p>O conjunto espacial <code>stxBrain</code>, utilizado nas vinhetas de
+controle de qualidade e de RCTD, é distribuído como um pacote de dados
+separado. Para que o download não seja necessário durante as análises, o
+próximo bloco também o instala antecipadamente e pode demorar alguns
+minutos na primeira execução.</p>
+<pre class="r"><code>pacotes_dados_seurat &lt;- c(stxBrain.SeuratData = &quot;stxBrain&quot;)
 
 for (pacote in names(pacotes_dados_seurat)) {
   if (!requireNamespace(pacote, quietly = TRUE)) {
@@ -1765,118 +1751,82 @@ for (pacote in names(pacotes_dados_seurat)) {
         options(timeout = max(600, limite_tempo_anterior))
         SeuratData::InstallData(pacotes_dados_seurat[[pacote]])
       },
-      finally = options(timeout = limite_tempo_anterior)
-    )
-  }
-}</code></pre>
+      finally = options(timeout = limite_tempo_anterior))}}</code></pre>
 </div>
 </div>
 <div id="finalizar-a-configuração" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Finalizar a
 configuração</h1>
-<p>Depois de executar os três grupos de instalação, reinicie a sessão
-pelo menu <strong>Session &gt; Restart R</strong> do RStudio. Em
-seguida, execute o bloco abaixo para conferir se os pacotes diretamente
-necessários à vinheta de RCTD estão disponíveis.</p>
-<pre class="r"><code>pacotes_rctd &lt;- c(
-  &quot;Seurat&quot;,&quot;SeuratObject&quot;,&quot;SeuratData&quot;,&quot;stxBrain.SeuratData&quot;,&quot;Matrix&quot;,
-  &quot;ggplot2&quot;,&quot;patchwork&quot;,&quot;spacexr&quot;,&quot;knitr&quot;,&quot;rmarkdown&quot;)
+<p>Depois de executar os três grupos de instalação e instalar o conjunto
+de dados, reinicie a sessão pelo menu <strong>Session &gt; Restart
+R</strong> do RStudio. Em seguida, execute o bloco abaixo para conferir
+a disponibilidade de todos os pacotes diretamente utilizados nas
+vinhetas e das dependências do Bioconductor instaladas
+explicitamente.</p>
+<pre class="r"><code>pacotes_curso &lt;- c(
+  &quot;Seurat&quot;, &quot;SeuratObject&quot;, &quot;SeuratData&quot;, &quot;stxBrain.SeuratData&quot;,
+  &quot;sctransform&quot;, &quot;dplyr&quot;, &quot;tibble&quot;, &quot;tidyr&quot;, &quot;ggplot2&quot;, &quot;patchwork&quot;,
+  &quot;gridExtra&quot;, &quot;RANN&quot;, &quot;future&quot;, &quot;Matrix&quot;, &quot;CellChat&quot;, &quot;RGraphSpace&quot;,
+  &quot;PathwaySpace&quot;, &quot;spacexr&quot;, &quot;BiocGenerics&quot;, &quot;BiocNeighbors&quot;,
+  &quot;ComplexHeatmap&quot;, &quot;knitr&quot;, &quot;rmarkdown&quot;, &quot;remotes&quot;, &quot;BiocManager&quot;
+)
 
-estado_pacotes_rctd &lt;- vapply(
-  pacotes_rctd,
+estado_pacotes &lt;- vapply(
+  pacotes_curso,
   requireNamespace,
   logical(1),
   quietly = TRUE
 )
 
 data.frame(
-  pacote = pacotes_rctd,
-  instalado = unname(estado_pacotes_rctd),
+  pacote = pacotes_curso,
+  instalado = unname(estado_pacotes),
   row.names = NULL
-)
-#&gt;                 pacote instalado
-#&gt; 1               Seurat      TRUE
-#&gt; 2         SeuratObject      TRUE
-#&gt; 3           SeuratData      TRUE
-#&gt; 4  stxBrain.SeuratData      TRUE
-#&gt; 5               Matrix      TRUE
-#&gt; 6              ggplot2      TRUE
-#&gt; 7            patchwork      TRUE
-#&gt; 8              spacexr      TRUE
-#&gt; 9                knitr      TRUE
-#&gt; 10           rmarkdown      TRUE</code></pre>
+)</code></pre>
 <p>O valor <code>TRUE</code> na coluna <code>instalado</code> confirma
 que o pacote correspondente está disponível. Se algum pacote aparecer
 como <code>FALSE</code>, execute novamente o bloco referente à sua
 origem e observe as mensagens apresentadas pelo R.</p>
+<p>As versões de <code>Seurat</code>, <code>RGraphSpace</code>,
+<code>PathwaySpace</code> e <code>spacexr</code> são verificadas
+separadamente. A coluna <code>atende_requisito</code> será
+<code>TRUE</code> quando o pacote estiver disponível na versão mínima
+esperada pelo material.</p>
+<pre class="r"><code>versoes_minimas &lt;- c(
+  Seurat = &quot;5.0.0&quot;, RGraphSpace = &quot;1.5.2&quot;,PathwaySpace = &quot;1.5.1&quot;,spacexr = &quot;2.2.1&quot;)
+
+versoes_instaladas &lt;- vapply(
+  names(versoes_minimas),
+  function(pacote) {
+    if (requireNamespace(pacote, quietly = TRUE)) {
+      as.character(packageVersion(pacote))
+    } else {
+      NA_character_
+    }
+  },
+  character(1)
+)
+
+atende_requisito &lt;- vapply(
+  names(versoes_minimas),
+  function(pacote) {
+    requireNamespace(pacote, quietly = TRUE) &amp;&amp;
+      packageVersion(pacote) &gt;= package_version(versoes_minimas[[pacote]])
+  },
+  logical(1)
+)
+
+data.frame(
+  pacote = names(versoes_minimas),
+  versao_instalada = unname(versoes_instaladas),
+  versao_minima = unname(versoes_minimas),
+  atende_requisito = unname(atende_requisito),
+  row.names = NULL)</code></pre>
 </div>
 <div id="informações-da-sessão" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Informações da
 sessão</h1>
-<pre class="r"><code>sessionInfo()
-#&gt; R version 4.5.3 (2026-03-11 ucrt)
-#&gt; Platform: x86_64-w64-mingw32/x64
-#&gt; Running under: Windows 11 x64 (build 26200)
-#&gt; 
-#&gt; Matrix products: default
-#&gt;   LAPACK version 3.12.1
-#&gt; 
-#&gt; locale:
-#&gt; [1] LC_COLLATE=Portuguese_Brazil.utf8  LC_CTYPE=Portuguese_Brazil.utf8    LC_MONETARY=Portuguese_Brazil.utf8
-#&gt; [4] LC_NUMERIC=C                       LC_TIME=Portuguese_Brazil.utf8    
-#&gt; 
-#&gt; time zone: America/Sao_Paulo
-#&gt; tzcode source: internal
-#&gt; 
-#&gt; attached base packages:
-#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
-#&gt; 
-#&gt; loaded via a namespace (and not attached):
-#&gt;   [1] RcppAnnoy_0.0.23            splines_4.5.3               later_1.4.8                 ggplotify_0.1.3            
-#&gt;   [5] tibble_3.3.1                polyclip_1.10-7             fastDummies_1.7.6           lifecycle_1.0.5            
-#&gt;   [9] doParallel_1.0.17           globals_0.19.1              lattice_0.22-9              MASS_7.3-65                
-#&gt;  [13] magrittr_2.0.5              openxlsx_4.2.9              plotly_4.12.1               sass_0.4.10                
-#&gt;  [17] rmarkdown_2.32              jquerylib_0.1.4             yaml_2.3.12                 remotes_2.5.0              
-#&gt;  [21] httpuv_1.6.17               otel_0.2.0                  Seurat_5.5.1                sctransform_0.4.3          
-#&gt;  [25] doRNG_1.8.6.3               spam_2.11-4                 zip_3.0.2                   sp_2.2-3                   
-#&gt;  [29] sessioninfo_1.2.4           pkgbuild_1.4.8              spatstat.sparse_3.2-0       reticulate_1.47.0          
-#&gt;  [33] cowplot_1.2.0               pbapply_1.7-5               RColorBrewer_1.1-3          abind_1.4-8                
-#&gt;  [37] pkgload_1.5.3               GenomicRanges_1.62.1        Rtsne_0.17                  purrr_1.2.2                
-#&gt;  [41] BiocGenerics_0.56.0         msigdbr_26.1.1              yulab.utils_0.2.5           tweenr_2.0.3               
-#&gt;  [45] rappdirs_0.3.4              circlize_0.4.18             IRanges_2.44.0              S4Vectors_0.48.1           
-#&gt;  [49] ggrepel_0.9.8               RMTstat_0.3.2               irlba_2.3.7                 listenv_1.0.0              
-#&gt;  [53] spatstat.utils_3.2-4        goftest_1.2-3               RSpectra_0.16-2             spatstat.random_3.5-1      
-#&gt;  [57] fitdistrplus_1.2-6          parallelly_1.48.0           DelayedArray_0.36.1         codetools_0.2-20           
-#&gt;  [61] ggforce_0.5.0               xml2_1.6.0                  tidyselect_1.2.1            shape_1.4.6.1              
-#&gt;  [65] aplot_0.3.1                 farver_2.1.2                stats4_4.5.3                matrixStats_1.5.0          
-#&gt;  [69] spatstat.explore_3.8-2      Seqinfo_1.0.0               roxygen2_8.1.0              jsonlite_2.0.0             
-#&gt;  [73] gghalves_0.1.4              ellipsis_0.3.3              progressr_1.0.0             ggridges_0.5.7             
-#&gt;  [77] survival_3.8-6              RobustRankAggreg_1.2.1      iterators_1.0.14            foreach_1.5.2              
-#&gt;  [81] tools_4.5.3                 ica_1.0-3                   Rcpp_1.1.2                  glue_1.8.1                 
-#&gt;  [85] SparseArray_1.10.10         gridExtra_2.3.1             stxBrain.SeuratData_0.1.2   xfun_0.59                  
-#&gt;  [89] MatrixGenerics_1.22.0       usethis_3.2.1               dplyr_1.2.1                 withr_3.0.3                
-#&gt;  [93] BiocManager_1.30.27         fastmap_1.2.0               RcppML_1.0.0                digest_0.6.39              
-#&gt;  [97] R6_2.6.1                    mime_0.13                   gridGraphics_0.5-1          colorspace_2.1-3           
-#&gt; [101] scattermore_1.2             tensor_1.5.1                spatstat.data_3.1-9         tidyr_1.3.2                
-#&gt; [105] generics_0.1.4              ggsci_5.2.0                 data.table_1.18.6.1         S4Arrays_1.10.1            
-#&gt; [109] httr_1.4.9                  htmlwidgets_1.6.4           scatterpie_0.2.6            uwot_0.2.5                 
-#&gt; [113] pkgconfig_2.0.3             gtable_0.3.6                rsconnect_1.11.0            lmtest_0.9-40              
-#&gt; [117] S7_0.2.2                    XVector_0.50.0              SingleCellExperiment_1.32.0 htmltools_0.5.9            
-#&gt; [121] dotCall64_1.2               Biobase_2.70.0              SeuratObject_5.4.0          scales_1.4.0               
-#&gt; [125] tidyverse_2.0.0             SeuratData_0.2.2.9002       png_0.1-9                   SpatialExperiment_1.20.0   
-#&gt; [129] spatstat.univar_3.2-0       ggfun_0.2.1                 knitr_1.51                  rstudioapi_0.19.0          
-#&gt; [133] rjson_0.2.23                reshape2_1.4.5              nlme_3.1-168                cachem_1.1.0               
-#&gt; [137] zoo_1.9-0                   GlobalOptions_0.1.4         stringr_1.6.0               spacexr_1.2.0              
-#&gt; [141] KernSmooth_2.23-26          parallel_4.5.3              miniUI_0.1.2                pillar_1.11.1              
-#&gt; [145] grid_4.5.3                  vctrs_0.7.3                 RANN_2.6.3                  promises_1.5.0             
-#&gt; [149] xtable_1.8-8                cluster_2.1.8.2             evaluate_1.0.5              magick_2.9.1               
-#&gt; [153] cli_3.6.6                   compiler_4.5.3              rlang_1.3.0                 crayon_1.5.3               
-#&gt; [157] rngtools_1.5.2              future.apply_1.20.2         pointr_0.2.0                plyr_1.8.9                 
-#&gt; [161] fs_2.1.0                    stringi_1.8.9               viridisLite_0.4.3           deldir_2.0-4               
-#&gt; [165] assertthat_0.2.1            devtools_2.5.2              spatstat.geom_3.8-2         Matrix_1.7-4               
-#&gt; [169] RcppHNSW_0.7.0              patchwork_1.3.2             future_1.75.0               ggplot2_4.0.3              
-#&gt; [173] shiny_1.14.0                SummarizedExperiment_1.40.0 ROCR_1.0-12                 igraph_2.3.3               
-#&gt; [177] memoise_2.0.1               bslib_0.12.0</code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
 </div>
 
 

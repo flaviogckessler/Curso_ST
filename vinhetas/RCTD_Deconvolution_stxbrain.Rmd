@@ -118,43 +118,29 @@ Curso_ST/
 
 O arquivo `bibliography.bib` é compartilhado por todas as vinhetas e deve permanecer na raiz do repositório. Por isso, o cabeçalho deste documento utiliza o caminho relativo `../bibliography.bib`.
 
-# Instalar os pacotes necessários
+# Conferir os pacotes necessários
 
-Execute este bloco apenas na primeira vez. Esta vinheta utiliza a versão 2.2.1 do repositório original do `spacexr` no GitHub. Essa versão usa `create.RCTD()` e `run.RCTD()` e não é intercambiável com a interface do Bioconductor.
+A instalação de todos os pacotes e de suas dependências está centralizada em `Configuracao_do_ambiente_RStudio.Rmd`. Esta vinheta utiliza a versão 2.2.1 do repositório original do `spacexr` no GitHub, cuja interface oferece `create.RCTD()` e `run.RCTD()` e não é intercambiável com a interface do Bioconductor.
 
-```{r instalar-pacotes, message = FALSE, eval=FALSE}
-pacotes_cran <- c(
-  "Seurat", "Matrix", "ggplot2", "remotes", "knitr", "rmarkdown"
+```{r conferir-pacotes-rctd, message = FALSE}
+pacotes_rctd <- c(
+  "Seurat", "SeuratObject", "SeuratData", "Matrix", "ggplot2", "spacexr"
 )
-pacotes_cran_ausentes <- pacotes_cran[
-  !vapply(pacotes_cran, requireNamespace, logical(1), quietly = TRUE)
+
+pacotes_rctd_ausentes <- pacotes_rctd[
+  !vapply(pacotes_rctd, requireNamespace, logical(1), quietly = TRUE)
 ]
 
-if (length(pacotes_cran_ausentes) > 0) {
-  install.packages(pacotes_cran_ausentes)
-}
-
-if (packageVersion("Seurat") < package_version("5.0.0")) {
-  install.packages("Seurat")
-}
-
-if (!requireNamespace("SeuratData", quietly = TRUE)) {
-  remotes::install_github("satijalab/seurat-data")
-}
-
-if (
-  !requireNamespace("spacexr", quietly = TRUE) ||
-  !exists("create.RCTD", envir = asNamespace("spacexr"), inherits = FALSE)
-) {
-  remotes::install_github(
-    "dmcable/spacexr",
-    build_vignettes = FALSE,
-    upgrade = "never"
+if (length(pacotes_rctd_ausentes) > 0) {
+  stop(
+    "Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. ",
+    "Pacotes ausentes: ",
+    paste(pacotes_rctd_ausentes, collapse = ", ")
   )
 }
 ```
 
-Depois da instalação, reinicie a sessão do R antes de continuar. Isso evita que uma versão do `spacexr` carregada anteriormente permaneça ativa na memória.
+Depois de executar a primeira vinheta, reinicie a sessão do R antes de continuar. Isso evita que uma versão do `spacexr` carregada anteriormente permaneça ativa na memória.
 
 # Informar manualmente o diretório das vinhetas
 
@@ -227,7 +213,7 @@ options(stringsAsFactors = FALSE)
 if (packageVersion("SeuratObject") < package_version("5.0.0")) {
   stop(
     "Esta vinheta requer SeuratObject 5 ou mais recente. ",
-    "Execute novamente o bloco de instalação e reinicie o R."
+    "Execute novamente a instalação na primeira vinheta e reinicie o R."
   )
 }
 ```
@@ -240,24 +226,19 @@ packageVersion("spacexr")
 
 # Obter o `stxBrain` diretamente do `SeuratData`
 
-## Instalar o conjunto de dados
+## Conferir o conjunto de dados
 
-O `stxBrain` é distribuído como um pacote de dados separado. O próximo bloco verifica se esse pacote já está instalado e só faz o download quando necessário. O arquivo é relativamente grande, então a primeira instalação pode demorar alguns minutos.
+O `stxBrain` é distribuído como um pacote de dados separado e também é instalado na primeira vinheta. O próximo bloco somente confirma que o conjunto está disponível antes de continuar.
 
-```{r instalar-stxbrain}
-if (requireNamespace("stxBrain.SeuratData", quietly = TRUE)) {
-  message("O conjunto stxBrain já está instalado.")
-} else {
-  limite_tempo_anterior <- getOption("timeout")
-
-  tryCatch(
-    {
-      options(timeout = max(600, limite_tempo_anterior))
-      SeuratData::InstallData("stxBrain")
-    },
-    finally = options(timeout = limite_tempo_anterior)
+```{r conferir-stxbrain}
+if (!requireNamespace("stxBrain.SeuratData", quietly = TRUE)) {
+  stop(
+    "O conjunto stxBrain não está instalado. Execute primeiro ",
+    "Configuracao_do_ambiente_RStudio.Rmd."
   )
 }
+
+message("O conjunto stxBrain está instalado.")
 ```
 
 ## Carregar a seção anterior 1

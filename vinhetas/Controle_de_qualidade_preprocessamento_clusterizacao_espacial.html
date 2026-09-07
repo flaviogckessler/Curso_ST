@@ -1616,28 +1616,24 @@ dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)</code></pr
 <div id="carregar-os-pacotes" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Carregar os
 pacotes</h2>
-<pre class="r"><code>library(&quot;dplyr&quot;)
-library(&quot;Seurat&quot;)
+<pre class="r"><code>library(&quot;Seurat&quot;)
 library(&quot;SeuratData&quot;)
 library(&quot;sctransform&quot;)
 library(&quot;ggplot2&quot;)
 library(&quot;patchwork&quot;)</code></pre>
-<p>O conjunto <code>stxBrain</code> é instalado na primeira utilização.
-Caso ele ainda não esteja disponível, execute o bloco abaixo uma única
-vez e reinicie a sessão do R.</p>
-<pre class="r"><code>if (requireNamespace(&quot;stxBrain.SeuratData&quot;, quietly = TRUE)) {
-  message(&quot;O conjunto stxBrain já está instalado.&quot;)
-} else {
-  limite_tempo_anterior &lt;- getOption(&quot;timeout&quot;)
-
-  tryCatch(
-    {
-      options(timeout = max(600, limite_tempo_anterior))
-      SeuratData::InstallData(&quot;stxBrain&quot;)
-    },
-    finally = options(timeout = limite_tempo_anterior)
+<p>O conjunto <code>stxBrain</code> e as demais dependências são
+instalados exclusivamente em
+<code>Configuracao_do_ambiente_RStudio.Rmd</code>. Depois de executar a
+primeira vinheta e reiniciar a sessão do R, use o bloco abaixo apenas
+para confirmar que o conjunto está disponível.</p>
+<pre class="r"><code>if (!requireNamespace(&quot;stxBrain.SeuratData&quot;, quietly = TRUE)) {
+  stop(
+    &quot;O conjunto stxBrain não está instalado. Execute primeiro &quot;,
+    &quot;Configuracao_do_ambiente_RStudio.Rmd.&quot;
   )
-}</code></pre>
+}
+
+message(&quot;O conjunto stxBrain está instalado.&quot;)</code></pre>
 </div>
 </div>
 <div id="carregar-e-reunir-as-seções-espaciais" class="section level1" number="3">
@@ -1967,20 +1963,16 @@ ggsave(
   limitsize = FALSE
 )</code></pre>
 </div>
-<div id="identificando-genes-espacialmente-variáveis-svgs" class="section level1" number="8">
-<h1><span class="header-section-number">8</span> Identificando Genes
-Espacialmente Variáveis (SVGs)</h1>
-<p>SVGs são genes que a distribuição da sua expressão gênica é
-dependente da localização. Em outras palavras, a distribuição da
-expressão de um SVG não é aleatória ao longo das coordenadas XY.</p>
-<div id="baseado-em-dados-pré-anotados" class="section level2" number="8.1">
-<h2><span class="header-section-number">8.1</span> Baseado em dados
-pré-anotados</h2>
+<div id="expressão-diferencial-em-rnaseq-espacial" class="section level1" number="8">
+<h1><span class="header-section-number">8</span> Expressão Diferencial
+em RNAseq espacial</h1>
 <p>A função <code>FindMarkers()</code> do <code>Seurat</code> que
 realiza um cálculo de expressão diferencial entre dois fatores
 pré-anotados. Para esse exemplo, serão utilizados dois clusteres que
 foram calculados anteriormente, a informação de clusteres fica
-armazenada nos metadados do objeto <code>Seurat</code>.</p>
+armazenada nos metadados do objeto <code>Seurat</code>. A função pode
+ser utilizada para qualquer fator pré-anotado, isso inclui clusteres,
+PCs, tipos celulares e afins.</p>
 <p>Para prosseguir com o exemplo dessas análises, iremos trabalhar
 apenas com região <code>anterior</code>. Para isso, será feito um subset
 do objeto <code>brain</code>.</p>
@@ -2006,6 +1998,25 @@ de_markers &lt;- FindMarkers(
 )
 
 de_markers</code></pre>
+<p>O data frame <code>de_markers</code> obtido elenca os genes
+diferencialmente expressos entre os fatores fornecidos, nesse caso dois
+clusteres. As colunas indicam:</p>
+<ul>
+<li><p>p_val : p-valor</p></li>
+<li><p>avg_log2FC : log fold-change da expressão média entre os dois
+“grupos”. Valores positivos indicam que o feature (gene) está mais
+expresso no primeiro grupo. Valores negativos indicam que o feature
+(gene) está mais expresso no segundo grupo.</p></li>
+<li><p>pct.1 : O percentual de células em que o feature (gene) é
+detectado no primeiro grupo</p></li>
+<li><p>pct.2 : O percentual de células em que o feature (gene) é
+detectado no segundo grupo</p></li>
+<li><p>p_val_adj : p-valor ajustado, o ajuste é realizado com a correção
+de bonferroni usando todos os features do dataset.</p></li>
+</ul>
+<p>Encontre mais informações sobre a função <code>FindMarkers()</code>
+na vinheta do <code>Seurat</code>: <a href="https://satijalab.org/seurat/articles/de_vignette">Differential
+expression testing</a>.</p>
 <pre class="r"><code>g &lt;- SpatialFeaturePlot(object = brain_ant,
                         features = rownames(de_markers)[1:3],
                         alpha = c(0.1, 1), ncol = 3)
@@ -2023,10 +2034,16 @@ ggsave(
   bg = &quot;white&quot;,
   limitsize = FALSE
 )</code></pre>
+<p>A imagem gerada apresenta três genes diferencialmente expressos do
+cluster 10 em relação ao cluster 1, ou seja, genes que estão
+enriquecidos no cluster 10.</p>
 </div>
-<div id="sem-necessidade-de-dados-pré-anotatos" class="section level2" number="8.2">
-<h2><span class="header-section-number">8.2</span> Sem necessidade de
-dados pré-anotatos</h2>
+<div id="identificando-genes-espacialmente-variáveis-svgs" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> Identificando Genes
+Espacialmente Variáveis (SVGs)</h1>
+<p>SVGs são genes que a distribuição da sua expressão gênica é
+dependente da localização. Em outras palavras, a distribuição da
+expressão de um SVG não é aleatória ao longo das coordenadas XY.</p>
 <p>A função <code>FindSpatiallyVariableFeatures()</code> do
 <code>Seurat</code> utiliza métodos estatísticas que calculam quanto
 quea expressão de determinado gene é dependente da localização
@@ -2071,9 +2088,8 @@ gene em relação ao espaço geográfico. Existem diversos métodos na
 literatura que identificam SVGs, como: I de Moran,SpatialDE,nnSVG,
 SPARK-X, MERINGUE.</p>
 </div>
-</div>
-<div id="arquivos-produzidos" class="section level1" number="9">
-<h1><span class="header-section-number">9</span> Arquivos
+<div id="arquivos-produzidos" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Arquivos
 produzidos</h1>
 <p>Ao concluir a vinheta, os seguintes arquivos estarão disponíveis:</p>
 <ul>
@@ -2088,13 +2104,13 @@ clusterizado;</li>
 <li><code>imagens/Brain_Genes.png</code>.</li>
 </ul>
 </div>
-<div id="informações-da-sessão" class="section level1" number="10">
-<h1><span class="header-section-number">10</span> Informações da
+<div id="informações-da-sessão" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> Informações da
 sessão</h1>
 <pre class="r"><code>sessionInfo()</code></pre>
 </div>
-<div id="referências" class="section level1" number="11">
-<h1><span class="header-section-number">11</span> Referências</h1>
+<div id="referências" class="section level1" number="12">
+<h1><span class="header-section-number">12</span> Referências</h1>
 </div>
 
 

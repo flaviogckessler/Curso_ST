@@ -72,7 +72,6 @@ dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
 ## Carregar os pacotes
 
 ```{r carregar-pacotes}
-library("dplyr")
 library("Seurat")
 library("SeuratData")
 library("sctransform")
@@ -80,22 +79,17 @@ library("ggplot2")
 library("patchwork")
 ```
 
-O conjunto `stxBrain` é instalado na primeira utilização. Caso ele ainda não esteja disponível, execute o bloco abaixo uma única vez e reinicie a sessão do R.
+O conjunto `stxBrain` e as demais dependências são instalados exclusivamente em `Configuracao_do_ambiente_RStudio.Rmd`. Depois de executar a primeira vinheta e reiniciar a sessão do R, use o bloco abaixo apenas para confirmar que o conjunto está disponível.
 
-```{r instalar-stxbrain, eval=FALSE}
-if (requireNamespace("stxBrain.SeuratData", quietly = TRUE)) {
-  message("O conjunto stxBrain já está instalado.")
-} else {
-  limite_tempo_anterior <- getOption("timeout")
-
-  tryCatch(
-    {
-      options(timeout = max(600, limite_tempo_anterior))
-      SeuratData::InstallData("stxBrain")
-    },
-    finally = options(timeout = limite_tempo_anterior)
+```{r conferir-stxbrain}
+if (!requireNamespace("stxBrain.SeuratData", quietly = TRUE)) {
+  stop(
+    "O conjunto stxBrain não está instalado. Execute primeiro ",
+    "Configuracao_do_ambiente_RStudio.Rmd."
   )
 }
+
+message("O conjunto stxBrain está instalado.")
 ```
 
 # Carregar e reunir as seções espaciais
@@ -435,13 +429,9 @@ ggsave(
 )
 ```
 
-# Identificando Genes Espacialmente Variáveis (SVGs)
+# Expressão Diferencial em RNAseq espacial
 
-SVGs são genes que a distribuição da sua expressão gênica é dependente da localização. Em outras palavras, a distribuição da expressão de um SVG não é aleatória ao longo das coordenadas XY.
-
-## Baseado em dados pré-anotados
-
-A função `FindMarkers()` do `Seurat` que realiza um cálculo de expressão diferencial entre dois fatores pré-anotados. Para esse exemplo, serão utilizados dois clusteres que foram calculados anteriormente, a informação de clusteres fica armazenada nos metadados do objeto `Seurat`.
+A função `FindMarkers()` do `Seurat` que realiza um cálculo de expressão diferencial entre dois fatores pré-anotados. Para esse exemplo, serão utilizados dois clusteres que foram calculados anteriormente, a informação de clusteres fica armazenada nos metadados do objeto `Seurat`. A função pode ser utilizada para qualquer fator pré-anotado, isso inclui clusteres, PCs, tipos celulares e afins.
 
 Para prosseguir com o exemplo dessas análises, iremos trabalhar apenas com região `anterior`. Para isso, será feito um subset do objeto `brain`.
 
@@ -473,6 +463,20 @@ de_markers <- FindMarkers(
 de_markers
 ```
 
+O data frame `de_markers` obtido elenca os genes diferencialmente expressos entre os fatores fornecidos, nesse caso dois clusteres. As colunas indicam:
+
+- p_val : p-valor
+
+- avg_log2FC : log fold-change da expressão média entre os dois "grupos". Valores positivos indicam que o feature (gene) está mais expresso no primeiro grupo. Valores negativos indicam que o feature (gene) está mais expresso no segundo grupo.
+
+- pct.1 : O percentual de células em que o feature (gene) é detectado no primeiro grupo
+
+- pct.2 : O percentual de células em que o feature (gene) é detectado no segundo grupo
+
+- p_val_adj : p-valor ajustado, o ajuste é realizado com a correção de bonferroni usando todos os features do dataset.
+
+Encontre mais informações sobre a função `FindMarkers()` na vinheta do `Seurat`: [Differential expression testing](https://satijalab.org/seurat/articles/de_vignette).
+
 ```{r plot-markers, fig.width=6, fig.height=3}
 g <- SpatialFeaturePlot(object = brain_ant,
                         features = rownames(de_markers)[1:3],
@@ -492,8 +496,11 @@ ggsave(
   limitsize = FALSE
 )
 ```
+A imagem gerada apresenta três genes diferencialmente expressos do cluster 10 em relação ao cluster 1, ou seja, genes que estão enriquecidos no cluster 10.
 
-## Sem necessidade de dados pré-anotatos
+# Identificando Genes Espacialmente Variáveis (SVGs)
+
+SVGs são genes que a distribuição da sua expressão gênica é dependente da localização. Em outras palavras, a distribuição da expressão de um SVG não é aleatória ao longo das coordenadas XY.
 
 A função `FindSpatiallyVariableFeatures()` do `Seurat` utiliza métodos estatísticas que calculam quanto quea expressão de determinado gene é dependente da localização (coordenadas XY). Abaixo, vamos utilizar o *I de Moran*, uma estatística de pode ser entendida como a correlação da expressão em relação à localizações próximas, também chamada de autocorrelação espacial.
 

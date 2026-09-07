@@ -97,66 +97,26 @@ dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
 dir.create(diretorio_resultados, showWarnings = FALSE, recursive = TRUE)
 ```
 
-## Instalar os pacotes necessários
+## Conferir os pacotes necessários
 
-Execute os blocos desta seção apenas na primeira vez. A instalação foi mantida na vinheta para facilitar a preparação do ambiente do curso.
+A instalação de todos os pacotes e de suas dependências está centralizada em `Configuracao_do_ambiente_RStudio.Rmd`. Execute a primeira vinheta, reinicie a sessão do R e então use o bloco abaixo apenas para confirmar que o ambiente está pronto.
 
-```{r instalar-pacotes-cran, eval=FALSE, message=TRUE, warning=TRUE}
-pacotes_cran <- c(
-  "devtools", "remotes", "dplyr", "tibble", "tidyr", "ggplot2",
-  "patchwork", "igraph", "RANN", "future", "Seurat", "SeuratObject"
+```{r conferir-pacotes}
+pacotes_cellchat <- c(
+  "CellChat", "RGraphSpace", "PathwaySpace", "Seurat", "SeuratObject",
+  "dplyr", "tibble", "tidyr", "ggplot2", "RANN", "future"
 )
 
-pacotes_ausentes <- pacotes_cran[
-  !vapply(pacotes_cran, requireNamespace, logical(1), quietly = TRUE)
+pacotes_ausentes <- pacotes_cellchat[
+  !vapply(pacotes_cellchat, requireNamespace, logical(1), quietly = TRUE)
 ]
 
 if (length(pacotes_ausentes) > 0) {
-  install.packages(pacotes_ausentes)
-}
-```
-
-```{r instalar-pacotes-bioconductor, eval=FALSE, message=TRUE, warning=TRUE}
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager")
-}
-
-if (!requireNamespace("BiocNeighbors", quietly = TRUE)) {
-  BiocManager::install("BiocNeighbors")
-}
-```
-
-```{r instalar-pacotes-github, eval=FALSE, message=TRUE, warning=TRUE}
-if (!requireNamespace("SpatialCellChat", quietly = TRUE)) {
-  devtools::install_github("jinworks/SpatialCellChat")
-}
-
-if (!requireNamespace("CellChat", quietly = TRUE)) {
-  devtools::install_github("jinworks/CellChat")
-}
-
-if (!requireNamespace("MERINGUE", quietly = TRUE)) {
-  devtools::install_github("JEFworks-Lab/MERINGUE")
-}
-
-if (!requireNamespace("ALRA", quietly = TRUE)) {
-  devtools::install_github("KlugerLab/ALRA")
-}
-
-if (!requireNamespace("RcppML", quietly = TRUE)) {
-  devtools::install_github("zdebruine/RcppML")
-}
-
-if (!requireNamespace("presto", quietly = TRUE)) {
-  devtools::install_github("immunogenomics/presto")
-}
-
-if (!requireNamespace("RGraphSpace", quietly = TRUE)) {
-  remotes::install_github("sysbiolab/RGraphSpace", build_vignettes = TRUE)
-}
-
-if (!requireNamespace("PathwaySpace", quietly = TRUE)) {
-  remotes::install_github("sysbiolab/PathwaySpace", build_vignettes = TRUE)
+  stop(
+    "Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. ",
+    "Pacotes ausentes: ",
+    paste(pacotes_ausentes, collapse = ", ")
+  )
 }
 ```
 
@@ -172,9 +132,6 @@ library("dplyr")
 library("tibble")
 library("tidyr")
 library("ggplot2")
-library("patchwork")
-library("igraph")
-library("RANN")
 
 options(stringsAsFactors = FALSE)
 ```

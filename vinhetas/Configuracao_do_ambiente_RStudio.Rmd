@@ -1,0 +1,251 @@
+---
+title: "Configuração do ambiente do RStudio"
+author:
+  - name: Flávio Gabriel Carazza-Kessler
+  - name: Carolina Saibro-Girardi
+date: "2026-09-06"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+---
+
+```{r configuracao, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  message = TRUE,
+  warning = FALSE
+)
+```
+
+# Visão geral
+
+Esta é a vinheta inicial do curso **Análise de Dados de Transcriptômica Single-Cell e Espacial**. Seu objetivo é preparar o ambiente do RStudio e instalar previamente os pacotes que serão utilizados nas aulas.
+
+Os pacotes são organizados conforme sua origem — CRAN, Bioconductor ou GitHub — e cada instalação somente é executada quando o pacote ainda não está disponível ou não atende à versão mínima necessária. As dependências transitivas são resolvidas pelos próprios instaladores. Dessa forma, você pode executar novamente os blocos sem reinstalar desnecessariamente os pacotes que já possui.
+
+Caso você não possua a maioria desses pacotes instalados, o processo todo pode demorar algum tempo. Por favor, mantenha atenção às mensagens de erro para evitar que algum pacote não tenha sido apropriadamente instalado.
+
+> **Recomendação:** execute o RStudio com permissões suficientes para gravar na biblioteca de pacotes. Após concluir todas as instalações, reinicie a sessão do R antes de continuar o curso.
+
+# Interagir com o RStudio
+
+## Conferir o diretório de trabalho
+
+O comando abaixo mostra o diretório de trabalho atual:
+
+```{r conferir-diretorio, eval=FALSE}
+getwd()
+```
+
+Se necessário, crie e defina outro diretório de trabalho. Substitua o caminho do exemplo por aquele que será utilizado no curso.
+
+```{r definir-diretorio, eval=FALSE}
+# novo_diretorio <- "~/curso_transcriptomica"
+# dir.create(novo_diretorio, showWarnings = FALSE, recursive = TRUE)
+# setwd(novo_diretorio)
+```
+
+## Conferir os arquivos disponíveis
+
+```{r conferir-arquivos, eval=FALSE}
+list.files()
+```
+
+## Conferir a biblioteca de pacotes
+
+O R procura e instala pacotes nos diretórios mostrados por:
+
+```{r conferir-bibliotecas, eval=FALSE}
+.libPaths()
+```
+
+# Instalar os pacotes do curso
+
+Execute os próximos blocos na ordem apresentada. Dependendo da conexão com a internet e do computador utilizado, a primeira instalação pode demorar vários minutos. As versões atuais do `RGraphSpace` e do `PathwaySpace` requerem R 4.5.0 ou mais recente; o primeiro bloco interrompe a instalação com uma mensagem clara caso a versão do R precise ser atualizada.
+
+## Pacotes do CRAN
+
+Este bloco instala somente os pacotes do CRAN chamados diretamente pelas vinhetas ou necessários para instalar e compilar o material. O `Seurat` e o `SeuratObject` devem estar na série 5 ou mais recente.
+
+```{r instalar-pacotes-cran, eval=FALSE}
+if (getRversion() < package_version("4.5.0")) {
+  stop(
+    "Este curso requer R 4.5.0 ou mais recente por causa do ",
+    "RGraphSpace e do PathwaySpace. Atualize o R antes de continuar."
+  )
+}
+
+pacotes_cran <- c(
+  "Seurat", "SeuratObject", "sctransform", "dplyr", "tibble", "tidyr",
+  "ggplot2", "patchwork", "gridExtra", "RANN", "future", "Matrix",
+  "knitr", "rmarkdown", "remotes", "BiocManager"
+)
+
+versoes_minimas_cran <- c(
+  Seurat = "5.0.0",
+  SeuratObject = "5.0.0"
+)
+
+for (pacote in pacotes_cran) {
+  precisa_instalar <- !requireNamespace(pacote, quietly = TRUE)
+
+  if (
+    pacote %in% names(versoes_minimas_cran) &&
+    !precisa_instalar &&
+    packageVersion(pacote) < package_version(versoes_minimas_cran[[pacote]])
+  ) {
+    precisa_instalar <- TRUE
+  }
+
+  if (precisa_instalar) {
+    install.packages(pacote, dependencies = NA)
+  }
+}
+```
+
+## Pacotes do Bioconductor
+
+O `BiocManager`, instalado no bloco anterior, é utilizado para obter as dependências do Bioconductor exigidas pelo `CellChat`.
+
+```{r instalar-pacotes-bioconductor, eval=FALSE}
+pacotes_bioconductor <- c("BiocGenerics", "BiocNeighbors", "ComplexHeatmap")
+
+for (pacote in pacotes_bioconductor) {
+  if (!requireNamespace(pacote, quietly = TRUE)) {
+    BiocManager::install(
+      pacote,
+      ask = FALSE,
+      update = FALSE)}}
+```
+
+## Pacotes do GitHub
+
+Este bloco instala os pacotes obtidos diretamente do GitHub. O `SeuratData` permite acessar conjuntos de dados do Seurat; o `CellChat` é usado na inferência de comunicação celular; o `RGraphSpace` e o `PathwaySpace` sustentam as projeções espaciais; e o `spacexr` fornece a implementação do RCTD utilizada no curso.
+
+As vinhetas internas desses pacotes não são compiladas, pois não são necessárias para o curso. Somente as dependências obrigatórias são instaladas e os demais pacotes já presentes não são atualizados em bloco. Para `RGraphSpace`, `PathwaySpace` e `spacexr`, o código também exige as versões mínimas compatíveis com este material. No caso do `spacexr`, a presença da função `create.RCTD()` é confirmada para evitar o uso acidental de uma interface incompatível.
+
+```{r instalar-pacotes-github, eval=FALSE}
+repositorios_github <- c(
+  SeuratData = "satijalab/seurat-data", CellChat = "jinworks/CellChat",
+  RGraphSpace = "sysbiolab/RGraphSpace", PathwaySpace = "sysbiolab/PathwaySpace",
+  spacexr = "dmcable/spacexr")
+
+versoes_minimas_github <- c(RGraphSpace = "1.5.2",PathwaySpace = "1.5.1",spacexr = "2.2.1")
+
+for (pacote in names(repositorios_github)) {
+  precisa_instalar <- !requireNamespace(pacote, quietly = TRUE)
+
+  if (
+    pacote %in% names(versoes_minimas_github) &&
+    !precisa_instalar &&
+    packageVersion(pacote) < package_version(versoes_minimas_github[[pacote]])
+  ) {precisa_instalar <- TRUE}
+
+  if (
+    pacote == "spacexr" && !precisa_instalar &&
+    !exists(
+      "create.RCTD", envir = asNamespace("spacexr"),inherits = FALSE)){
+    precisa_instalar <- TRUE}
+
+  if (precisa_instalar) {
+    remotes::install_github(
+      repositorios_github[[pacote]],
+      dependencies = NA,
+      build_vignettes = FALSE,
+      upgrade = "never")}}
+```
+
+## Pacote de dados do `SeuratData`
+
+O conjunto espacial `stxBrain`, utilizado nas vinhetas de controle de qualidade e de RCTD, é distribuído como um pacote de dados separado. Para que o download não seja necessário durante as análises, o próximo bloco também o instala antecipadamente e pode demorar alguns minutos na primeira execução.
+
+```{r instalar-pacotes-dados-seurat, eval=FALSE}
+pacotes_dados_seurat <- c(stxBrain.SeuratData = "stxBrain")
+
+for (pacote in names(pacotes_dados_seurat)) {
+  if (!requireNamespace(pacote, quietly = TRUE)) {
+    limite_tempo_anterior <- getOption("timeout")
+
+    tryCatch(
+      {
+        options(timeout = max(600, limite_tempo_anterior))
+        SeuratData::InstallData(pacotes_dados_seurat[[pacote]])
+      },
+      finally = options(timeout = limite_tempo_anterior))}}
+```
+
+# Finalizar a configuração
+
+Depois de executar os três grupos de instalação e instalar o conjunto de dados, reinicie a sessão pelo menu **Session \> Restart R** do RStudio. Em seguida, execute o bloco abaixo para conferir a disponibilidade de todos os pacotes diretamente utilizados nas vinhetas e das dependências do Bioconductor instaladas explicitamente.
+
+```{r conferir-instalacao, eval=FALSE}
+pacotes_curso <- c(
+  "Seurat", "SeuratObject", "SeuratData", "stxBrain.SeuratData",
+  "sctransform", "dplyr", "tibble", "tidyr", "ggplot2", "patchwork",
+  "gridExtra", "RANN", "future", "Matrix", "CellChat", "RGraphSpace",
+  "PathwaySpace", "spacexr", "BiocGenerics", "BiocNeighbors",
+  "ComplexHeatmap", "knitr", "rmarkdown", "remotes", "BiocManager"
+)
+
+estado_pacotes <- vapply(
+  pacotes_curso,
+  requireNamespace,
+  logical(1),
+  quietly = TRUE
+)
+
+data.frame(
+  pacote = pacotes_curso,
+  instalado = unname(estado_pacotes),
+  row.names = NULL
+)
+```
+
+O valor `TRUE` na coluna `instalado` confirma que o pacote correspondente está disponível. Se algum pacote aparecer como `FALSE`, execute novamente o bloco referente à sua origem e observe as mensagens apresentadas pelo R.
+
+As versões de `Seurat`, `RGraphSpace`, `PathwaySpace` e `spacexr` são verificadas separadamente. A coluna `atende_requisito` será `TRUE` quando o pacote estiver disponível na versão mínima esperada pelo material.
+
+```{r conferir-versoes, eval=FALSE}
+versoes_minimas <- c(
+  Seurat = "5.0.0", RGraphSpace = "1.5.2",PathwaySpace = "1.5.1",spacexr = "2.2.1")
+
+versoes_instaladas <- vapply(
+  names(versoes_minimas),
+  function(pacote) {
+    if (requireNamespace(pacote, quietly = TRUE)) {
+      as.character(packageVersion(pacote))
+    } else {
+      NA_character_
+    }
+  },
+  character(1)
+)
+
+atende_requisito <- vapply(
+  names(versoes_minimas),
+  function(pacote) {
+    requireNamespace(pacote, quietly = TRUE) &&
+      packageVersion(pacote) >= package_version(versoes_minimas[[pacote]])
+  },
+  logical(1)
+)
+
+data.frame(
+  pacote = names(versoes_minimas),
+  versao_instalada = unname(versoes_instaladas),
+  versao_minima = unname(versoes_minimas),
+  atende_requisito = unname(atende_requisito),
+  row.names = NULL)
+```
+
+# Informações da sessão
+
+```{r informacoes-sessao}
+sessionInfo()
+```

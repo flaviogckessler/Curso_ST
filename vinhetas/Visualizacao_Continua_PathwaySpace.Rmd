@@ -65,24 +65,36 @@ diretorio_imagens <- file.path(diretorio_curso, "imagens")
 dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
 ```
 
-## Instalar o PathwaySpace
+## Conferir o PathwaySpace
 
-Caso o pacote ainda não tenha sido instalado durante a preparação do ambiente, execute o bloco abaixo uma única vez e reinicie a sessão do R.
+A instalação do `PathwaySpace`, do `RGraphSpace` e das demais dependências está centralizada em `Configuracao_do_ambiente_RStudio.Rmd`. Depois de executar a primeira vinheta e reiniciar a sessão do R, use o bloco abaixo apenas para confirmar que o ambiente está pronto.
 
-```{r instalar-pathwayspace, eval=FALSE}
-remotes::install_github(
-  "sysbiolab/PathwaySpace",
-  build_vignettes = TRUE
+```{r conferir-pathwayspace}
+pacotes_visualizacao <- c(
+  "Seurat", "SeuratObject", "ggplot2", "patchwork", "gridExtra",
+  "RGraphSpace", "PathwaySpace"
 )
+
+pacotes_ausentes <- pacotes_visualizacao[
+  !vapply(pacotes_visualizacao, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(pacotes_ausentes) > 0) {
+  stop(
+    "Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. ",
+    "Pacotes ausentes: ",
+    paste(pacotes_ausentes, collapse = ", ")
+  )
+}
 ```
 
 ## Carregar os pacotes
 
 ```{r carregar-pacotes, message=FALSE}
-library("dplyr")
 library("Seurat")
 library("SeuratObject")
 library("ggplot2")
+library("RGraphSpace")
 library("PathwaySpace")
 library("patchwork")
 ```

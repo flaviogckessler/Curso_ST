@@ -1752,45 +1752,33 @@ deste documento utiliza o caminho relativo
 <code>../bibliography.bib</code>.</p>
 </div>
 </div>
-<div id="instalar-os-pacotes-necessários" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Instalar os pacotes
+<div id="conferir-os-pacotes-necessários" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Conferir os pacotes
 necessários</h1>
-<p>Execute este bloco apenas na primeira vez. Esta vinheta utiliza a
-versão 2.2.1 do repositório original do <code>spacexr</code> no GitHub.
-Essa versão usa <code>create.RCTD()</code> e <code>run.RCTD()</code> e
-não é intercambiável com a interface do Bioconductor.</p>
-<pre class="r"><code>pacotes_cran &lt;- c(
-  &quot;Seurat&quot;, &quot;Matrix&quot;, &quot;ggplot2&quot;, &quot;remotes&quot;, &quot;knitr&quot;, &quot;rmarkdown&quot;
+<p>A instalação de todos os pacotes e de suas dependências está
+centralizada em <code>Configuracao_do_ambiente_RStudio.Rmd</code>. Esta
+vinheta utiliza a versão 2.2.1 do repositório original do
+<code>spacexr</code> no GitHub, cuja interface oferece
+<code>create.RCTD()</code> e <code>run.RCTD()</code> e não é
+intercambiável com a interface do Bioconductor.</p>
+<pre class="r"><code>pacotes_rctd &lt;- c(
+  &quot;Seurat&quot;, &quot;SeuratObject&quot;, &quot;SeuratData&quot;, &quot;Matrix&quot;, &quot;ggplot2&quot;, &quot;spacexr&quot;
 )
-pacotes_cran_ausentes &lt;- pacotes_cran[
-  !vapply(pacotes_cran, requireNamespace, logical(1), quietly = TRUE)
+
+pacotes_rctd_ausentes &lt;- pacotes_rctd[
+  !vapply(pacotes_rctd, requireNamespace, logical(1), quietly = TRUE)
 ]
 
-if (length(pacotes_cran_ausentes) &gt; 0) {
-  install.packages(pacotes_cran_ausentes)
-}
-
-if (packageVersion(&quot;Seurat&quot;) &lt; package_version(&quot;5.0.0&quot;)) {
-  install.packages(&quot;Seurat&quot;)
-}
-
-if (!requireNamespace(&quot;SeuratData&quot;, quietly = TRUE)) {
-  remotes::install_github(&quot;satijalab/seurat-data&quot;)
-}
-
-if (
-  !requireNamespace(&quot;spacexr&quot;, quietly = TRUE) ||
-  !exists(&quot;create.RCTD&quot;, envir = asNamespace(&quot;spacexr&quot;), inherits = FALSE)
-) {
-  remotes::install_github(
-    &quot;dmcable/spacexr&quot;,
-    build_vignettes = FALSE,
-    upgrade = &quot;never&quot;
+if (length(pacotes_rctd_ausentes) &gt; 0) {
+  stop(
+    &quot;Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. &quot;,
+    &quot;Pacotes ausentes: &quot;,
+    paste(pacotes_rctd_ausentes, collapse = &quot;, &quot;)
   )
 }</code></pre>
-<p>Depois da instalação, reinicie a sessão do R antes de continuar. Isso
-evita que uma versão do <code>spacexr</code> carregada anteriormente
-permaneça ativa na memória.</p>
+<p>Depois de executar a primeira vinheta, reinicie a sessão do R antes
+de continuar. Isso evita que uma versão do <code>spacexr</code>
+carregada anteriormente permaneça ativa na memória.</p>
 </div>
 <div id="informar-manualmente-o-diretório-das-vinhetas" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Informar manualmente o
@@ -1868,7 +1856,7 @@ options(stringsAsFactors = FALSE)
 if (packageVersion(&quot;SeuratObject&quot;) &lt; package_version(&quot;5.0.0&quot;)) {
   stop(
     &quot;Esta vinheta requer SeuratObject 5 ou mais recente. &quot;,
-    &quot;Execute novamente o bloco de instalação e reinicie o R.&quot;
+    &quot;Execute novamente a instalação na primeira vinheta e reinicie o R.&quot;
   )
 }</code></pre>
 <p>Confira a versão carregada. O resultado esperado é
@@ -1878,26 +1866,20 @@ if (packageVersion(&quot;SeuratObject&quot;) &lt; package_version(&quot;5.0.0&qu
 <div id="obter-o-stxbrain-diretamente-do-seuratdata" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Obter o
 <code>stxBrain</code> diretamente do <code>SeuratData</code></h1>
-<div id="instalar-o-conjunto-de-dados" class="section level2" number="7.1">
-<h2><span class="header-section-number">7.1</span> Instalar o conjunto
+<div id="conferir-o-conjunto-de-dados" class="section level2" number="7.1">
+<h2><span class="header-section-number">7.1</span> Conferir o conjunto
 de dados</h2>
 <p>O <code>stxBrain</code> é distribuído como um pacote de dados
-separado. O próximo bloco verifica se esse pacote já está instalado e só
-faz o download quando necessário. O arquivo é relativamente grande,
-então a primeira instalação pode demorar alguns minutos.</p>
-<pre class="r"><code>if (requireNamespace(&quot;stxBrain.SeuratData&quot;, quietly = TRUE)) {
-  message(&quot;O conjunto stxBrain já está instalado.&quot;)
-} else {
-  limite_tempo_anterior &lt;- getOption(&quot;timeout&quot;)
-
-  tryCatch(
-    {
-      options(timeout = max(600, limite_tempo_anterior))
-      SeuratData::InstallData(&quot;stxBrain&quot;)
-    },
-    finally = options(timeout = limite_tempo_anterior)
+separado e também é instalado na primeira vinheta. O próximo bloco
+somente confirma que o conjunto está disponível antes de continuar.</p>
+<pre class="r"><code>if (!requireNamespace(&quot;stxBrain.SeuratData&quot;, quietly = TRUE)) {
+  stop(
+    &quot;O conjunto stxBrain não está instalado. Execute primeiro &quot;,
+    &quot;Configuracao_do_ambiente_RStudio.Rmd.&quot;
   )
-}</code></pre>
+}
+
+message(&quot;O conjunto stxBrain está instalado.&quot;)</code></pre>
 </div>
 <div id="carregar-a-seção-anterior-1" class="section level2" number="7.2">
 <h2><span class="header-section-number">7.2</span> Carregar a seção

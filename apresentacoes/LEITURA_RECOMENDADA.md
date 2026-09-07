@@ -37,7 +37,7 @@ Apresentação: [`Aula 1 - Introdução à transcriptômica espacial.pptx`](<Aul
 
 - [**Tutorial do RStudio para iniciantes: um guia completo**](https://www.datacamp.com/pt/tutorial/r-studio-tutorial) — versão em português do tutorial introdutório do DataCamp. *(slide 9, hiperlink embutido)*
 - [**Space Ranger Algorithms: Read Processing & Secondary Analysis**](https://www.10xgenomics.com/support/software/space-ranger/latest/algorithms-overview/gene-expression) — documentação oficial sobre processamento de leituras, alinhamento, barcodes, UMIs e análises secundárias do Space Ranger. *(slide 42, hiperlink embutido)*
-- [**Configuração do ambiente do RStudio**](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html) — vinheta do curso para preparar o ambiente das aulas práticas. *(slide 63, hiperlink embutido)*
+- [**Configuração do ambiente do RStudio**](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html) — vinheta do curso para preparar o ambiente das aulas práticas. *(slide 63, hiperlink embutido)*
 - [**Tutorial: Getting Started with R and RStudio**](https://www.dataquest.io/blog/tutorial-getting-started-with-r-and-rstudio/) — introdução ao R e ao RStudio publicada pelo Dataquest. *(slide 67)*
 - [**Introduction to renv**](https://rstudio.github.io/renv/articles/renv.html) — documentação sobre criação de ambientes reproduzíveis e isolamento das dependências de projetos em R. *(slide 67)*
 - [**RStudio Tutorial for Beginners: A Complete Guide**](https://www.datacamp.com/tutorial/r-studio-tutorial) — versão em inglês do tutorial introdutório do DataCamp. *(slide 67)*

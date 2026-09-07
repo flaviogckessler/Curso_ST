@@ -1667,61 +1667,28 @@ diretorio_resultados &lt;- file.path(diretorio_curso, &quot;resultados&quot;)
 dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
 dir.create(diretorio_resultados, showWarnings = FALSE, recursive = TRUE)</code></pre>
 </div>
-<div id="instalar-os-pacotes-necessários" class="section level2" number="2.2">
-<h2><span class="header-section-number">2.2</span> Instalar os pacotes
+<div id="conferir-os-pacotes-necessários" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Conferir os pacotes
 necessários</h2>
-<p>Execute os blocos desta seção apenas na primeira vez. A instalação
-foi mantida na vinheta para facilitar a preparação do ambiente do
-curso.</p>
-<pre class="r"><code>pacotes_cran &lt;- c(
-  &quot;devtools&quot;, &quot;remotes&quot;, &quot;dplyr&quot;, &quot;tibble&quot;, &quot;tidyr&quot;, &quot;ggplot2&quot;,
-  &quot;patchwork&quot;, &quot;igraph&quot;, &quot;RANN&quot;, &quot;future&quot;, &quot;Seurat&quot;, &quot;SeuratObject&quot;
+<p>A instalação de todos os pacotes e de suas dependências está
+centralizada em <code>Configuracao_do_ambiente_RStudio.Rmd</code>.
+Execute a primeira vinheta, reinicie a sessão do R e então use o bloco
+abaixo apenas para confirmar que o ambiente está pronto.</p>
+<pre class="r"><code>pacotes_cellchat &lt;- c(
+  &quot;CellChat&quot;, &quot;RGraphSpace&quot;, &quot;PathwaySpace&quot;, &quot;Seurat&quot;, &quot;SeuratObject&quot;,
+  &quot;dplyr&quot;, &quot;tibble&quot;, &quot;tidyr&quot;, &quot;ggplot2&quot;, &quot;RANN&quot;, &quot;future&quot;
 )
 
-pacotes_ausentes &lt;- pacotes_cran[
-  !vapply(pacotes_cran, requireNamespace, logical(1), quietly = TRUE)
+pacotes_ausentes &lt;- pacotes_cellchat[
+  !vapply(pacotes_cellchat, requireNamespace, logical(1), quietly = TRUE)
 ]
 
 if (length(pacotes_ausentes) &gt; 0) {
-  install.packages(pacotes_ausentes)
-}</code></pre>
-<pre class="r"><code>if (!requireNamespace(&quot;BiocManager&quot;, quietly = TRUE)) {
-  install.packages(&quot;BiocManager&quot;)
-}
-
-if (!requireNamespace(&quot;BiocNeighbors&quot;, quietly = TRUE)) {
-  BiocManager::install(&quot;BiocNeighbors&quot;)
-}</code></pre>
-<pre class="r"><code>if (!requireNamespace(&quot;SpatialCellChat&quot;, quietly = TRUE)) {
-  devtools::install_github(&quot;jinworks/SpatialCellChat&quot;)
-}
-
-if (!requireNamespace(&quot;CellChat&quot;, quietly = TRUE)) {
-  devtools::install_github(&quot;jinworks/CellChat&quot;)
-}
-
-if (!requireNamespace(&quot;MERINGUE&quot;, quietly = TRUE)) {
-  devtools::install_github(&quot;JEFworks-Lab/MERINGUE&quot;)
-}
-
-if (!requireNamespace(&quot;ALRA&quot;, quietly = TRUE)) {
-  devtools::install_github(&quot;KlugerLab/ALRA&quot;)
-}
-
-if (!requireNamespace(&quot;RcppML&quot;, quietly = TRUE)) {
-  devtools::install_github(&quot;zdebruine/RcppML&quot;)
-}
-
-if (!requireNamespace(&quot;presto&quot;, quietly = TRUE)) {
-  devtools::install_github(&quot;immunogenomics/presto&quot;)
-}
-
-if (!requireNamespace(&quot;RGraphSpace&quot;, quietly = TRUE)) {
-  remotes::install_github(&quot;sysbiolab/RGraphSpace&quot;, build_vignettes = TRUE)
-}
-
-if (!requireNamespace(&quot;PathwaySpace&quot;, quietly = TRUE)) {
-  remotes::install_github(&quot;sysbiolab/PathwaySpace&quot;, build_vignettes = TRUE)
+  stop(
+    &quot;Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. &quot;,
+    &quot;Pacotes ausentes: &quot;,
+    paste(pacotes_ausentes, collapse = &quot;, &quot;)
+  )
 }</code></pre>
 </div>
 <div id="carregar-os-pacotes" class="section level2" number="2.3">
@@ -1736,9 +1703,6 @@ library(&quot;dplyr&quot;)
 library(&quot;tibble&quot;)
 library(&quot;tidyr&quot;)
 library(&quot;ggplot2&quot;)
-library(&quot;patchwork&quot;)
-library(&quot;igraph&quot;)
-library(&quot;RANN&quot;)
 
 options(stringsAsFactors = FALSE)</code></pre>
 </div>

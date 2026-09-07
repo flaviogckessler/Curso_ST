@@ -1635,24 +1635,38 @@ diretorio_imagens &lt;- file.path(diretorio_curso, &quot;imagens&quot;)
 
 dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)</code></pre>
 </div>
-<div id="instalar-o-pathwayspace" class="section level2" number="2.2">
-<h2><span class="header-section-number">2.2</span> Instalar o
+<div id="conferir-o-pathwayspace" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Conferir o
 PathwaySpace</h2>
-<p>Caso o pacote ainda não tenha sido instalado durante a preparação do
-ambiente, execute o bloco abaixo uma única vez e reinicie a sessão do
-R.</p>
-<pre class="r"><code>remotes::install_github(
-  &quot;sysbiolab/PathwaySpace&quot;,
-  build_vignettes = TRUE
-)</code></pre>
+<p>A instalação do <code>PathwaySpace</code>, do
+<code>RGraphSpace</code> e das demais dependências está centralizada em
+<code>Configuracao_do_ambiente_RStudio.Rmd</code>. Depois de executar a
+primeira vinheta e reiniciar a sessão do R, use o bloco abaixo apenas
+para confirmar que o ambiente está pronto.</p>
+<pre class="r"><code>pacotes_visualizacao &lt;- c(
+  &quot;Seurat&quot;, &quot;SeuratObject&quot;, &quot;ggplot2&quot;, &quot;patchwork&quot;, &quot;gridExtra&quot;,
+  &quot;RGraphSpace&quot;, &quot;PathwaySpace&quot;
+)
+
+pacotes_ausentes &lt;- pacotes_visualizacao[
+  !vapply(pacotes_visualizacao, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(pacotes_ausentes) &gt; 0) {
+  stop(
+    &quot;Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. &quot;,
+    &quot;Pacotes ausentes: &quot;,
+    paste(pacotes_ausentes, collapse = &quot;, &quot;)
+  )
+}</code></pre>
 </div>
 <div id="carregar-os-pacotes" class="section level2" number="2.3">
 <h2><span class="header-section-number">2.3</span> Carregar os
 pacotes</h2>
-<pre class="r"><code>library(&quot;dplyr&quot;)
-library(&quot;Seurat&quot;)
+<pre class="r"><code>library(&quot;Seurat&quot;)
 library(&quot;SeuratObject&quot;)
 library(&quot;ggplot2&quot;)
+library(&quot;RGraphSpace&quot;)
 library(&quot;PathwaySpace&quot;)
 library(&quot;patchwork&quot;)</code></pre>
 </div>
