@@ -1,0 +1,822 @@
+---
+title: "Comunicação célula-célula em transcriptômica espacial com CellChat e PathwaySpace"
+author:
+  - name: Flávio Gabriel Carazza-Kessler
+date: "2026-09-06"
+bibliography: ../bibliography.bib
+link-citations: true
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+params:
+  run_analysis: false
+---
+
+```{r configuracao, include=FALSE, purl=FALSE}
+executar_analise <- if (exists("params", inherits = FALSE)) {
+  isTRUE(params$run_analysis)
+} else {
+  # Ao executar os blocos manualmente, o objeto params não é criado.
+  # Nesse caso, a análise fica habilitada por padrão.
+  TRUE
+}
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = executar_analise,
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 9,
+  fig.height = 6,
+  dev = "png",
+  dpi = 120,
+  message = TRUE,
+  warning = FALSE
+)
+```
+
+# Visão geral
+
+Nesta vinheta, usaremos o objeto Seurat processado na etapa anterior do curso para inferir e visualizar comunicação célula-célula em dados de transcriptômica espacial. O fluxo reúne duas abordagens complementares:
+
+1. o **CellChat** estima interações ligante--receptor entre os clusters dos spots [@Jin2021CellChat; @Jin2025CellChat]; e
+2. o **RGraphSpace/PathwaySpace** representa essas interações entre spots vizinhos e projeta o sinal no tecido [@RGraphSpace2026; @Tercan2025PathwaySpace; @Ellrott2025CancerSubtypes].
+
+O objeto de entrada é obrigatoriamente `data/brain.RDS`, gerado pela vinheta de controle de qualidade, pré-processamento e clusterização. Ele contém as seções anterior e posterior do conjunto `stxBrain`, a expressão normalizada pelo `SCTransform()` e os clusters do Seurat [@Hao2023Seurat].
+
+Ao final, a tabela de comunicações projetadas entre spots será salva como:
+
+``` text
+resultados/spot-spot_commu_Allbrain.rds
+```
+
+> **Como interpretar o resultado:** o CellChat estima a comunicação no nível dos grupos, que nesta análise são os clusters do Seurat. A tabela spot--spot é uma projeção dessas estimativas sobre pares de spots espacialmente próximos e compatíveis com os clusters de origem e destino. Portanto, ela não representa uma inferência independente do CellChat para cada par individual de spots.
+
+A versão HTML desta vinheta apresenta o texto e os blocos de código, mas não executa a análise. Durante o curso, abra o arquivo `.Rmd` no RStudio e execute os blocos na ordem em que aparecem.
+
+Para gerar novamente o HTML sem executar a análise, use:
+
+```{r renderizar-vinheta, eval=FALSE}
+rmarkdown::render(
+  "CellChat_Comunicacao_Celular_PathwaySpace.Rmd",
+  params = list(run_analysis = FALSE)
+)
+```
+
+# Preparar o ambiente
+
+## Estrutura das pastas
+
+Antes de executar o código, defina o diretório de trabalho como a pasta `vinhetas/`. No RStudio, use **Session \> Set Working Directory \> To Source File Location**.
+
+``` text
+Curso_ST/
+|-- bibliography.bib
+|-- data/
+|   `-- brain.RDS
+|-- imagens/
+|-- resultados/
+`-- vinhetas/
+    |-- CellChat_Comunicacao_Celular_PathwaySpace.Rmd
+    `-- CellChat_Comunicacao_Celular_PathwaySpace.html
+```
+
+```{r definir-diretorios}
+diretorio_vinhetas <- getwd()
+diretorio_curso <- dirname(diretorio_vinhetas)
+diretorio_dados <- file.path(diretorio_curso, "data")
+diretorio_imagens <- file.path(diretorio_curso, "imagens")
+diretorio_resultados <- file.path(diretorio_curso, "resultados")
+
+dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
+dir.create(diretorio_resultados, showWarnings = FALSE, recursive = TRUE)
+```
+
+## Instalar os pacotes necessários
+
+Execute os blocos desta seção apenas na primeira vez. A instalação foi mantida na vinheta para facilitar a preparação do ambiente do curso.
+
+```{r instalar-pacotes-cran, eval=FALSE, message=TRUE, warning=TRUE}
+pacotes_cran <- c(
+  "devtools", "remotes", "dplyr", "tibble", "tidyr", "ggplot2",
+  "patchwork", "igraph", "RANN", "future", "Seurat", "SeuratObject"
+)
+
+pacotes_ausentes <- pacotes_cran[
+  !vapply(pacotes_cran, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(pacotes_ausentes) > 0) {
+  install.packages(pacotes_ausentes)
+}
+```
+
+```{r instalar-pacotes-bioconductor, eval=FALSE, message=TRUE, warning=TRUE}
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+
+if (!requireNamespace("BiocNeighbors", quietly = TRUE)) {
+  BiocManager::install("BiocNeighbors")
+}
+```
+
+```{r instalar-pacotes-github, eval=FALSE, message=TRUE, warning=TRUE}
+if (!requireNamespace("SpatialCellChat", quietly = TRUE)) {
+  devtools::install_github("jinworks/SpatialCellChat")
+}
+
+if (!requireNamespace("CellChat", quietly = TRUE)) {
+  devtools::install_github("jinworks/CellChat")
+}
+
+if (!requireNamespace("MERINGUE", quietly = TRUE)) {
+  devtools::install_github("JEFworks-Lab/MERINGUE")
+}
+
+if (!requireNamespace("ALRA", quietly = TRUE)) {
+  devtools::install_github("KlugerLab/ALRA")
+}
+
+if (!requireNamespace("RcppML", quietly = TRUE)) {
+  devtools::install_github("zdebruine/RcppML")
+}
+
+if (!requireNamespace("presto", quietly = TRUE)) {
+  devtools::install_github("immunogenomics/presto")
+}
+
+if (!requireNamespace("RGraphSpace", quietly = TRUE)) {
+  remotes::install_github("sysbiolab/RGraphSpace", build_vignettes = TRUE)
+}
+
+if (!requireNamespace("PathwaySpace", quietly = TRUE)) {
+  remotes::install_github("sysbiolab/PathwaySpace", build_vignettes = TRUE)
+}
+```
+
+## Carregar os pacotes
+
+```{r carregar-pacotes, message=FALSE}
+library("CellChat")
+library("RGraphSpace")
+library("PathwaySpace")
+library("Seurat")
+library("SeuratObject")
+library("dplyr")
+library("tibble")
+library("tidyr")
+library("ggplot2")
+library("patchwork")
+library("igraph")
+library("RANN")
+
+options(stringsAsFactors = FALSE)
+```
+
+# Carregar o objeto espacial produzido anteriormente
+
+```{r carregar-brain}
+brain <- readRDS(
+  file.path(diretorio_dados, "brain.RDS")
+)
+
+DefaultAssay(brain) <- "SCT"
+Idents(brain) <- "seurat_clusters"
+
+brain
+Images(brain)
+table(brain$region)
+```
+
+O objeto reúne duas seções físicas distintas. Por isso, os cálculos de distância serão feitos separadamente para cada imagem, embora os clusters sejam compartilhados entre as seções.
+
+# Preparar as entradas do CellChat
+
+O CellChat requer quatro componentes principais para dados espaciais:
+
+- `data.input`: matriz normalizada de genes por spots;
+- `meta`: rótulos dos clusters e das amostras;
+- `spatial.locs`: coordenadas espaciais em resolução completa; e
+- `spatial.factors`: fatores usados para converter pixels em micrômetros.
+
+## Expressão normalizada e metadados
+
+```{r preparar-expressao-metadados}
+data.input <- GetAssayData(
+  brain,
+  assay = "SCT",
+  layer = "data"
+)
+
+nomes_amostras <- Images(brain)
+
+spots_por_amostra <- lapply(
+  nomes_amostras,
+  function(nome_imagem) Cells(brain[[nome_imagem]])
+)
+names(spots_por_amostra) <- nomes_amostras
+
+amostra_por_spot <- rep(
+  nomes_amostras,
+  lengths(spots_por_amostra)
+)
+names(amostra_por_spot) <- unlist(
+  spots_por_amostra,
+  use.names = FALSE
+)
+
+metadados_brain <- brain[[]]
+
+meta <- data.frame(
+  labels = paste0(
+    "cluster_",
+    metadados_brain[colnames(data.input), "seurat_clusters"]
+  ),
+  samples = amostra_por_spot[colnames(data.input)],
+  row.names = colnames(data.input)
+)
+
+meta$labels <- factor(meta$labels)
+meta$samples <- factor(meta$samples, levels = nomes_amostras)
+
+table(meta$labels, meta$samples)
+```
+
+## Coordenadas e fatores espaciais
+
+As coordenadas de resolução completa são obtidas de cada imagem do objeto Seurat. Como as duas seções podem ter escalas em pixels ligeiramente diferentes, o fator de conversão é calculado separadamente. Para o Visium, adotamos 100 µm como distância entre centros de spots adjacentes e 55 µm como diâmetro teórico do spot.
+
+```{r preparar-coordenadas}
+coordenadas_por_amostra <- lapply(
+  nomes_amostras,
+  function(nome_imagem) {
+    coordenadas <- GetTissueCoordinates(
+      brain,
+      image = nome_imagem,
+      scale = NULL,
+      cols = c("imagerow", "imagecol")
+    )
+
+    if ("cell" %in% colnames(coordenadas)) {
+      rownames(coordenadas) <- coordenadas$cell
+      coordenadas$cell <- NULL
+    }
+
+    coordenadas[
+      spots_por_amostra[[nome_imagem]],
+      c("imagerow", "imagecol"),
+      drop = FALSE
+    ]
+  }
+)
+names(coordenadas_por_amostra) <- nomes_amostras
+
+spatial.locs <- do.call(
+  rbind,
+  unname(coordenadas_por_amostra)
+)
+spatial.locs <- spatial.locs[colnames(data.input), , drop = FALSE]
+
+spot.size <- 55
+distancia_centros <- 100
+
+spatial.factors <- do.call(
+  rbind,
+  lapply(
+    coordenadas_por_amostra,
+    function(coordenadas) {
+      distancias <- computeCellDistance(coordinates = coordenadas)
+      menor_distancia <- min(distancias[distancias != 0])
+
+      data.frame(
+        ratio = distancia_centros / menor_distancia,
+        tol = spot.size / 2
+      )
+    }
+  )
+)
+rownames(spatial.factors) <- nomes_amostras
+
+spatial.factors
+```
+
+## Criar o objeto CellChat
+
+```{r criar-cellchat}
+cellchat <- createCellChat(
+  object = data.input,
+  meta = meta,
+  group.by = "labels",
+  datatype = "spatial",
+  coordinates = spatial.locs,
+  spatial.factors = spatial.factors
+)
+
+cellchat
+```
+
+# Definir a base de interações ligante--receptor
+
+Como o conjunto `stxBrain` é de camundongo, usaremos `CellChatDB.mouse`. Para manter o tempo de execução adequado à atividade didática, a análise será restrita à categoria **Secreted Signaling**.
+
+```{r definir-cellchatdb, fig.width=7, fig.height=3}
+CellChatDB <- CellChatDB.mouse
+showDatabaseCategory(CellChatDB)
+
+CellChatDB.use <- subsetDB(
+  CellChatDB,
+  search = "Secreted Signaling",
+  key = "annotation"
+)
+
+cellchat@DB <- CellChatDB.use
+```
+
+# Pré-processar os dados de expressão
+
+```{r preprocessar-cellchat}
+cellchat <- subsetData(cellchat)
+
+future::plan("multisession", workers = 4)
+
+cellchat <- identifyOverExpressedGenes(cellchat)
+cellchat <- identifyOverExpressedInteractions(
+  cellchat,
+  variable.both = FALSE
+)
+```
+
+# Inferir a comunicação entre os clusters
+
+Nesta etapa, as interações são limitadas a 150 µm. As comunicações dependentes de contato são restringidas a 100 µm, aproximadamente a distância entre os centros de spots adjacentes no Visium. A execução pode levar vários minutos, dependendo do computador.
+
+```{r inferir-comunicacao}
+cellchat <- computeCommunProb(
+  cellchat,
+  type = "triMean",
+  distance.use = TRUE,
+  interaction.range = 150,
+  scale.distance = 0.01,
+  contact.range = 100,
+  contact.dependent = TRUE,
+  contact.knn.k = 6,
+  nboot = 100
+)
+
+cellchat <- filterCommunication(
+  cellchat,
+  min.cells = 10
+)
+```
+
+```{r extrair-comunicacoes}
+df.net <- subsetCommunication(
+  cellchat,
+  thresh = 0.05
+)
+
+df.net <- df.net %>%
+  mutate(
+    source = as.character(source),
+    target = as.character(target)
+  )
+
+head(df.net)
+```
+
+# Projetar as comunicações para pares de spots
+
+Agora identificaremos os pares de spots separados por até 150 µm dentro de cada seção. Depois, cada par receberá os clusters de origem e destino e será combinado às interações inferidas pelo CellChat.
+
+```{r identificar-spots-vizinhos}
+interaction.range <- 150
+
+criar_pares_vizinhos <- function(nome_amostra) {
+  spots <- spots_por_amostra[[nome_amostra]]
+  coordenadas <- coordenadas_por_amostra[[nome_amostra]]
+
+  coordenadas_um <- coordenadas *
+    spatial.factors[nome_amostra, "ratio"]
+
+  matriz_distancias <- as.matrix(dist(coordenadas_um))
+  diag(matriz_distancias) <- Inf
+
+  indices <- which(
+    matriz_distancias <= interaction.range,
+    arr.ind = TRUE
+  )
+
+  tibble(
+    source_spot = rownames(matriz_distancias)[indices[, 1]],
+    target_spot = colnames(matriz_distancias)[indices[, 2]],
+    distance_um = matriz_distancias[indices],
+    sample = nome_amostra
+  )
+}
+
+spot.pairs <- bind_rows(
+  lapply(nomes_amostras, criar_pares_vizinhos)
+)
+
+spot.groups <- tibble(
+  spot = rownames(cellchat@meta),
+  group = as.character(cellchat@idents)
+)
+
+spot.pairs <- spot.pairs %>%
+  left_join(
+    spot.groups,
+    by = c("source_spot" = "spot")
+  ) %>%
+  rename(source = group) %>%
+  left_join(
+    spot.groups,
+    by = c("target_spot" = "spot")
+  ) %>%
+  rename(target = group)
+
+head(spot.pairs)
+```
+
+```{r combinar-e-salvar-comunicacoes}
+spot.to.spot.communication <- spot.pairs %>%
+  inner_join(
+    df.net,
+    by = c("source", "target")
+  ) %>%
+  arrange(
+    sample,
+    source_spot,
+    target_spot,
+    pathway_name,
+    interaction_name
+  )
+
+head(spot.to.spot.communication)
+
+saveRDS(
+  spot.to.spot.communication,
+  file = file.path(
+    diretorio_resultados,
+    "spot-spot_commu_Allbrain.rds"
+  )
+)
+```
+
+# Construir a rede espacial no RGraphSpace
+
+Nesta parte, selecionaremos uma das seções para visualizar. Altere `amostra_visualizacao` para outro nome retornado por `Images(brain)` caso queira repetir o procedimento na seção posterior.
+
+```{r selecionar-amostra-visualizacao}
+amostra_visualizacao <- "anterior1"
+spots_visualizacao <- spots_por_amostra[[amostra_visualizacao]]
+
+coordenadas_gs <- GetTissueCoordinates(
+  brain,
+  image = amostra_visualizacao,
+  scale = "lowres"
+)
+
+if ("cell" %in% colnames(coordenadas_gs)) {
+  rownames(coordenadas_gs) <- coordenadas_gs$cell
+  coordenadas_gs$cell <- NULL
+}
+
+coordenadas_gs <- coordenadas_gs[
+  spots_visualizacao,
+  c("x", "y"),
+  drop = FALSE
+]
+
+metadados_gs <- brain[[]][spots_visualizacao, , drop = FALSE]
+gs <- GraphSpace(cbind(coordenadas_gs, metadados_gs))
+
+gs_fdata(gs) <- LayerData(
+  brain,
+  assay = "SCT",
+  layer = "data"
+)[, spots_visualizacao, drop = FALSE]
+
+gs_image(gs) <- GetImage(
+  brain[[amostra_visualizacao]],
+  mode = "raster"
+)
+
+gs <- normalizeGraphSpace(gs)
+```
+
+```{r visualizar-clusters-graphspace}
+spatial_theme <- theme_gspace_coords(
+  theme = "th3",
+  is_norm = TRUE,
+  xlab = "Coordenada espacial 1",
+  ylab = "Coordenada espacial 2"
+)
+
+cpal1 <- DiscretePalette(
+  nlevels(gs$seurat_clusters),
+  "polychrome"
+)
+
+ggplot(gs) +
+  annotation_gspace_image(gs) +
+  geom_nodespace(
+    mapping = aes(colour = seurat_clusters),
+    size = 0.8,
+    pch = 19
+  ) +
+  scale_colour_manual(values = cpal1) +
+  theme_gspace_legend(discrete_colour = TRUE) +
+  spatial_theme
+```
+
+## Adicionar as relações de proximidade
+
+A função abaixo conecta cada spot aos seis vizinhos mais próximos, respeitando o arranjo hexagonal esperado da lâmina Visium. Spots das bordas podem ter menos vizinhos.
+
+```{r definir-rede-proximidade}
+proximityNetwork <- function(gs, nnei = 6) {
+  nodes <- gs@nodes
+
+  vizinhos <- RANN::nn2(
+    nodes[, c("x", "y")],
+    nodes[, c("x", "y")],
+    k = nnei + 1
+  )
+
+  distancias <- as.data.frame(
+    vizinhos$nn.dists[, 2:(nnei + 1)]
+  )
+  indices <- as.data.frame(
+    vizinhos$nn.idx[, 2:(nnei + 1)]
+  )
+
+  distancia_tipica <- 1 / mean(1 / distancias$V1)
+  manter <- distancias
+  manter[, 1] <- TRUE
+  manter[, 2:ncol(manter)] <-
+    distancias[, 2:ncol(distancias)] >= 0.95 * distancia_tipica &
+    distancias[, 2:ncol(distancias)] <= 1.05 * distancia_tipica
+
+  matriz_arestas <- manter * indices
+  matriz_arestas$from <- row.names(matriz_arestas)
+
+  arestas <- matriz_arestas %>%
+    pivot_longer(
+      cols = -from,
+      names_to = "vizinho",
+      values_to = "to"
+    ) %>%
+    filter(to != 0) %>%
+    transmute(
+      from = as.numeric(from),
+      to = as.numeric(to),
+      v1 = pmin(from, to),
+      v2 = pmax(from, to)
+    ) %>%
+    distinct(v1, v2) %>%
+    transmute(
+      from = nodes$name[v1],
+      to = nodes$name[v2]
+    )
+
+  gs_add_edges(gs) <- arestas
+  gs
+}
+```
+
+```{r visualizar-rede-sem-arestas}
+ggplot(gs) +
+  annotation_gspace_image(gs) +
+  geom_edgespace() +
+  geom_nodespace(
+    mapping = aes(colour = seurat_clusters),
+    size = 3,
+    pch = 19
+  ) +
+  scale_colour_manual(values = cpal1) +
+  theme_gspace_legend(discrete_colour = TRUE) +
+  spatial_theme +
+  coord_cartesian(xlim = c(0.4, 0.6), ylim = c(0.4, 0.6))
+```
+
+```{r adicionar-e-visualizar-arestas}
+gs <- proximityNetwork(gs)
+
+ggplot(gs) +
+  annotation_gspace_image(gs) +
+  geom_edgespace() +
+  geom_nodespace(
+    mapping = aes(colour = seurat_clusters),
+    size = 3,
+    pch = 19
+  ) +
+  scale_colour_manual(values = cpal1) +
+  theme_gspace_legend(discrete_colour = TRUE) +
+  spatial_theme +
+  coord_cartesian(xlim = c(0.4, 0.6), ylim = c(0.4, 0.6))
+```
+
+# Associar as comunicações às arestas de proximidade
+
+As arestas do `GraphSpace` são não direcionadas, mas a comunicação ligante--receptor possui uma origem e um destino. Por isso, criaremos as duas orientações de cada aresta antes de associá-las às comunicações do CellChat.
+
+```{r associar-arestas-comunicacoes}
+arestas <- gs@edges %>%
+  select(name1, name2)
+
+arestas_direcionadas <- bind_rows(
+  arestas,
+  arestas %>% transmute(name1 = name2, name2 = name1)
+) %>%
+  distinct()
+
+spotCom_dt <- arestas_direcionadas %>%
+  inner_join(
+    spot.to.spot.communication %>%
+      filter(sample == amostra_visualizacao),
+    by = c(
+      "name1" = "source_spot",
+      "name2" = "target_spot"
+    )
+  )
+
+spotCom_dt$arrowType <- 1
+
+interacoes_disponiveis <- spotCom_dt %>%
+  select(ligand, receptor, interaction_name) %>%
+  filter(!is.na(ligand), !is.na(receptor)) %>%
+  distinct()
+
+head(interacoes_disponiveis)
+```
+
+# Projetar uma interação com PathwaySpace
+
+A função `communication_pathwayspace()` mantém os spots envolvidos em uma interação, constrói o objeto `PathwaySpace`, soma a expressão do ligante e do receptor e projeta esse sinal na rede. Nomes separados por sublinhado são tratados como complexos formados por mais de um gene.
+
+```{r definir-funcao-pathwayspace}
+communication_pathwayspace <- function(gs, lig, recep, spotCom_dt) {
+  comunicacoes <- spotCom_dt %>%
+    filter(ligand == lig, receptor == recep)
+
+  spots_selecionados <- unique(
+    c(comunicacoes$name1, comunicacoes$name2)
+  )
+
+  gs_selecionado <- gs_subset_nodes(gs, spots_selecionados)
+  pspace_obj <- buildPathwaySpace(gs_selecionado)
+
+  distancia_spots <- getNearestNode(pspace_obj)
+  pdist <- mean(distancia_spots$dist)
+
+  pspace_obj <- silhouetteMapping(
+    pspace_obj,
+    baseline = 0.1
+  )
+
+  resolver_features <- function(rotulo, features_disponiveis) {
+    if (rotulo %in% features_disponiveis) {
+      return(rotulo)
+    }
+
+    componentes <- strsplit(rotulo, "_", fixed = TRUE)[[1]]
+    features_disponiveis[
+      match(tolower(componentes), tolower(features_disponiveis))
+    ]
+  }
+
+  features_disponiveis <- colnames(pspace_obj@fdata)
+  features_ligante <- resolver_features(lig, features_disponiveis)
+  features_receptor <- resolver_features(recep, features_disponiveis)
+
+  if (anyNA(c(features_ligante, features_receptor))) {
+    stop("O ligante ou o receptor não foi encontrado nos dados de expressão.")
+  }
+
+  sinal_ligante <- rowSums(
+    as.matrix(
+      pspace_obj@fdata[, features_ligante, drop = FALSE]
+    )
+  )
+  sinal_receptor <- rowSums(
+    as.matrix(
+      pspace_obj@fdata[, features_receptor, drop = FALSE]
+    )
+  )
+
+  vertexSignal(pspace_obj) <- sinal_ligante + sinal_receptor
+
+  pspace_obj <- circularProjection(
+    pspace_obj,
+    decay.fun = weibullDecay(decay = 0.5, pdist = pdist),
+    aggregate.fun = signalAggregation("wmean"),
+    k = gs_vcount(pspace_obj)
+  )
+
+  pspace_obj
+}
+```
+
+## Visualizar um exemplo
+
+Usaremos a primeira interação disponível na seção escolhida. Se preferir investigar um par específico, substitua `ligante_exemplo` e `receptor_exemplo` pelos símbolos desejados.
+
+```{r visualizar-interacao-exemplo}
+ligante_exemplo <- interacoes_disponiveis$ligand[1]
+receptor_exemplo <- interacoes_disponiveis$receptor[1]
+
+pspace_obj <- communication_pathwayspace(
+  gs = gs,
+  lig = ligante_exemplo,
+  recep = receptor_exemplo,
+  spotCom_dt = spotCom_dt
+)
+
+grafico_exemplo <- ggplot(pspace_obj) +
+  annotation_gspace_image(pspace_obj) +
+  annotation_pspace_signal(pspace_obj, si.alpha = 0.25) +
+  spatial_theme +
+  labs(
+    title = paste(ligante_exemplo, "-", receptor_exemplo)
+  )
+
+grafico_exemplo
+```
+
+# Salvar as figuras das interações
+
+Para a atividade em sala, serão exportadas as três primeiras interações. Para gerar todas as figuras, substitua a definição de `numero_interacoes` por `nrow(interacoes_disponiveis)`.
+
+```{r salvar-figuras-interacoes}
+numero_interacoes <- min(3, nrow(interacoes_disponiveis))
+
+for (i in seq_len(numero_interacoes)) {
+  ligante <- interacoes_disponiveis$ligand[i]
+  receptor <- interacoes_disponiveis$receptor[i]
+
+  pspace_i <- communication_pathwayspace(
+    gs = gs,
+    lig = ligante,
+    recep = receptor,
+    spotCom_dt = spotCom_dt
+  )
+
+  grafico_i <- ggplot(pspace_i) +
+    annotation_gspace_image(pspace_i) +
+    annotation_pspace_signal(pspace_i, si.alpha = 0.25) +
+    spatial_theme +
+    labs(title = paste(ligante, "-", receptor))
+
+  nome_arquivo <- paste0(
+    "CellChat_PathwaySpace_",
+    amostra_visualizacao,
+    "_",
+    ligante,
+    "-",
+    receptor,
+    ".png"
+  )
+
+  nome_arquivo <- gsub(
+    "[^[:alnum:]_.-]",
+    "_",
+    nome_arquivo
+  )
+
+  ggsave(
+    filename = file.path(diretorio_imagens, nome_arquivo),
+    plot = grafico_i,
+    width = 9,
+    height = 6,
+    units = "in",
+    dpi = 120,
+    bg = "white"
+  )
+
+  rm(pspace_i, grafico_i)
+  gc()
+}
+```
+
+# Arquivos produzidos
+
+Ao concluir a vinheta, estarão disponíveis:
+
+- `resultados/spot-spot_commu_Allbrain.rds`: tabela de comunicações projetadas entre spots das duas seções;
+- `imagens/CellChat_PathwaySpace_<seção>_<ligante>-<receptor>.png`: projeções das interações selecionadas; e
+- os objetos intermediários `cellchat`, `gs`, `spot.to.spot.communication` e `spotCom_dt` na sessão do R.
+
+# Informações da sessão
+
+```{r informacoes-sessao, echo=FALSE}
+sessionInfo()
+```
+
+# Referências

@@ -12,7 +12,7 @@
 
 <meta name="date" content="2026-09-06" />
 
-<title>Controle de qualidade, pré-processamento e clusterização de dados espaciais</title>
+<title>Comunicação célula-célula em transcriptômica espacial com CellChat e PathwaySpace</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1397,6 +1397,29 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
 
 
 
@@ -1566,10 +1589,9 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">Controle de qualidade, pré-processamento e
-clusterização de dados espaciais</h1>
+<h1 class="title toc-ignore">Comunicação célula-célula em
+transcriptômica espacial com CellChat e PathwaySpace</h1>
 <h4 class="author">Flávio Gabriel Carazza-Kessler</h4>
-<h4 class="author">Carolina Saibro-Girardi</h4>
 <h4 class="date">2026-09-06</h4>
 
 </div>
@@ -1577,524 +1599,832 @@ clusterização de dados espaciais</h1>
 
 <div id="visão-geral" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Visão geral</h1>
-<p>Nesta vinheta, duas seções sagitais de cérebro de camundongo
-produzidas com a tecnologia Visium são carregadas do conjunto
-<code>stxBrain</code>, reunidas em um objeto Seurat e submetidas a um
-fluxo direto de:</p>
+<p>Nesta vinheta, usaremos o objeto Seurat processado na etapa anterior
+do curso para inferir e visualizar comunicação célula-célula em dados de
+transcriptômica espacial. O fluxo reúne duas abordagens
+complementares:</p>
 <ol style="list-style-type: decimal">
-<li>controle de qualidade dos spots;</li>
-<li>normalização com <code>SCTransform()</code>;</li>
-<li>redução de dimensionalidade;</li>
-<li>clusterização não supervisionada; e</li>
-<li>visualização dos clusters e de genes marcadores no tecido.</li>
+<li>o <strong>CellChat</strong> estima interações ligante–receptor entre
+os clusters dos spots <span class="citation">(<a href="#ref-Jin2021CellChat">Jin et al. 2021</a>; <a href="#ref-Jin2025CellChat">Jin, Plikus, and Nie 2025</a>)</span>;
+e</li>
+<li>o <strong>RGraphSpace/PathwaySpace</strong> representa essas
+interações entre spots vizinhos e projeta o sinal no tecido <span class="citation">(<a href="#ref-RGraphSpace2026">Sysbiolab Team
+2026</a>; <a href="#ref-Tercan2025PathwaySpace">Tercan et al. 2025</a>;
+<a href="#ref-Ellrott2025CancerSubtypes">Ellrott et al.
+2025</a>)</span>.</li>
 </ol>
-<p>Ao final, o objeto processado será salvo como
-<code>data/brain.RDS</code>. Todas as figuras serão gravadas em formato
-PNG na pasta <code>imagens/</code>.</p>
-<p>A versão HTML desta vinheta apresenta o roteiro sem executar a
-análise. Durante o curso, abra o arquivo <code>.Rmd</code> no RStudio e
-execute os blocos na ordem em que aparecem.</p>
+<p>O objeto de entrada é obrigatoriamente <code>data/brain.RDS</code>,
+gerado pela vinheta de controle de qualidade, pré-processamento e
+clusterização. Ele contém as seções anterior e posterior do conjunto
+<code>stxBrain</code>, a expressão normalizada pelo
+<code>SCTransform()</code> e os clusters do Seurat <span class="citation">(<a href="#ref-Hao2023Seurat">Hao et al.
+2024</a>)</span>.</p>
+<p>Ao final, a tabela de comunicações projetadas entre spots será salva
+como:</p>
+<pre class="text"><code>resultados/spot-spot_commu_Allbrain.rds</code></pre>
+<blockquote>
+<p><strong>Como interpretar o resultado:</strong> o CellChat estima a
+comunicação no nível dos grupos, que nesta análise são os clusters do
+Seurat. A tabela spot–spot é uma projeção dessas estimativas sobre pares
+de spots espacialmente próximos e compatíveis com os clusters de origem
+e destino. Portanto, ela não representa uma inferência independente do
+CellChat para cada par individual de spots.</p>
+</blockquote>
+<p>A versão HTML desta vinheta apresenta o texto e os blocos de código,
+mas não executa a análise. Durante o curso, abra o arquivo
+<code>.Rmd</code> no RStudio e execute os blocos na ordem em que
+aparecem.</p>
+<p>Para gerar novamente o HTML sem executar a análise, use:</p>
+<pre class="r"><code>rmarkdown::render(
+  &quot;CellChat_Comunicacao_Celular_PathwaySpace.Rmd&quot;,
+  params = list(run_analysis = FALSE)
+)</code></pre>
 </div>
 <div id="preparar-o-ambiente" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Preparar o
 ambiente</h1>
-<div id="definir-as-pastas-de-saída" class="section level2" number="2.1">
-<h2><span class="header-section-number">2.1</span> Definir as pastas de
-saída</h2>
+<div id="estrutura-das-pastas" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> Estrutura das
+pastas</h2>
 <p>Antes de executar o código, defina o diretório de trabalho como a
 pasta <code>vinhetas/</code>. No RStudio, use <strong>Session &gt; Set
-Working Directory &gt; To Source File Location</strong>. Em seguida,
-execute:</p>
+Working Directory &gt; To Source File Location</strong>.</p>
+<pre class="text"><code>Curso_ST/
+|-- bibliography.bib
+|-- data/
+|   `-- brain.RDS
+|-- imagens/
+|-- resultados/
+`-- vinhetas/
+    |-- CellChat_Comunicacao_Celular_PathwaySpace.Rmd
+    `-- CellChat_Comunicacao_Celular_PathwaySpace.html</code></pre>
 <pre class="r"><code>diretorio_vinhetas &lt;- getwd()
 diretorio_curso &lt;- dirname(diretorio_vinhetas)
 diretorio_dados &lt;- file.path(diretorio_curso, &quot;data&quot;)
 diretorio_imagens &lt;- file.path(diretorio_curso, &quot;imagens&quot;)
+diretorio_resultados &lt;- file.path(diretorio_curso, &quot;resultados&quot;)
 
-dir.create(diretorio_dados, showWarnings = FALSE, recursive = TRUE)
-dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)</code></pre>
+dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)
+dir.create(diretorio_resultados, showWarnings = FALSE, recursive = TRUE)</code></pre>
 </div>
-<div id="carregar-os-pacotes" class="section level2" number="2.2">
-<h2><span class="header-section-number">2.2</span> Carregar os
-pacotes</h2>
-<pre class="r"><code>library(&quot;dplyr&quot;)
-library(&quot;Seurat&quot;)
-library(&quot;SeuratData&quot;)
-library(&quot;sctransform&quot;)
-library(&quot;ggplot2&quot;)
-library(&quot;patchwork&quot;)</code></pre>
-<p>O conjunto <code>stxBrain</code> é instalado na primeira utilização.
-Caso ele ainda não esteja disponível, execute o bloco abaixo uma única
-vez e reinicie a sessão do R.</p>
-<pre class="r"><code>if (requireNamespace(&quot;stxBrain.SeuratData&quot;, quietly = TRUE)) {
-  message(&quot;O conjunto stxBrain já está instalado.&quot;)
-} else {
-  limite_tempo_anterior &lt;- getOption(&quot;timeout&quot;)
+<div id="instalar-os-pacotes-necessários" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Instalar os pacotes
+necessários</h2>
+<p>Execute os blocos desta seção apenas na primeira vez. A instalação
+foi mantida na vinheta para facilitar a preparação do ambiente do
+curso.</p>
+<pre class="r"><code>pacotes_cran &lt;- c(
+  &quot;devtools&quot;, &quot;remotes&quot;, &quot;dplyr&quot;, &quot;tibble&quot;, &quot;tidyr&quot;, &quot;ggplot2&quot;,
+  &quot;patchwork&quot;, &quot;igraph&quot;, &quot;RANN&quot;, &quot;future&quot;, &quot;Seurat&quot;, &quot;SeuratObject&quot;
+)
 
-  tryCatch(
-    {
-      options(timeout = max(600, limite_tempo_anterior))
-      SeuratData::InstallData(&quot;stxBrain&quot;)
-    },
-    finally = options(timeout = limite_tempo_anterior)
-  )
+pacotes_ausentes &lt;- pacotes_cran[
+  !vapply(pacotes_cran, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(pacotes_ausentes) &gt; 0) {
+  install.packages(pacotes_ausentes)
+}</code></pre>
+<pre class="r"><code>if (!requireNamespace(&quot;BiocManager&quot;, quietly = TRUE)) {
+  install.packages(&quot;BiocManager&quot;)
+}
+
+if (!requireNamespace(&quot;BiocNeighbors&quot;, quietly = TRUE)) {
+  BiocManager::install(&quot;BiocNeighbors&quot;)
+}</code></pre>
+<pre class="r"><code>if (!requireNamespace(&quot;SpatialCellChat&quot;, quietly = TRUE)) {
+  devtools::install_github(&quot;jinworks/SpatialCellChat&quot;)
+}
+
+if (!requireNamespace(&quot;CellChat&quot;, quietly = TRUE)) {
+  devtools::install_github(&quot;jinworks/CellChat&quot;)
+}
+
+if (!requireNamespace(&quot;MERINGUE&quot;, quietly = TRUE)) {
+  devtools::install_github(&quot;JEFworks-Lab/MERINGUE&quot;)
+}
+
+if (!requireNamespace(&quot;ALRA&quot;, quietly = TRUE)) {
+  devtools::install_github(&quot;KlugerLab/ALRA&quot;)
+}
+
+if (!requireNamespace(&quot;RcppML&quot;, quietly = TRUE)) {
+  devtools::install_github(&quot;zdebruine/RcppML&quot;)
+}
+
+if (!requireNamespace(&quot;presto&quot;, quietly = TRUE)) {
+  devtools::install_github(&quot;immunogenomics/presto&quot;)
+}
+
+if (!requireNamespace(&quot;RGraphSpace&quot;, quietly = TRUE)) {
+  remotes::install_github(&quot;sysbiolab/RGraphSpace&quot;, build_vignettes = TRUE)
+}
+
+if (!requireNamespace(&quot;PathwaySpace&quot;, quietly = TRUE)) {
+  remotes::install_github(&quot;sysbiolab/PathwaySpace&quot;, build_vignettes = TRUE)
 }</code></pre>
 </div>
-</div>
-<div id="carregar-e-reunir-as-seções-espaciais" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Carregar e reunir as
-seções espaciais</h1>
-<p>Serão utilizadas uma seção anterior e uma seção posterior do cérebro
-de camundongo.</p>
-<pre class="r"><code>brain1 &lt;- SeuratData::LoadData(&quot;stxBrain&quot;, type = &quot;anterior1&quot;)
-brain2 &lt;- SeuratData::LoadData(&quot;stxBrain&quot;, type = &quot;posterior1&quot;)
+<div id="carregar-os-pacotes" class="section level2" number="2.3">
+<h2><span class="header-section-number">2.3</span> Carregar os
+pacotes</h2>
+<pre class="r"><code>library(&quot;CellChat&quot;)
+library(&quot;RGraphSpace&quot;)
+library(&quot;PathwaySpace&quot;)
+library(&quot;Seurat&quot;)
+library(&quot;SeuratObject&quot;)
+library(&quot;dplyr&quot;)
+library(&quot;tibble&quot;)
+library(&quot;tidyr&quot;)
+library(&quot;ggplot2&quot;)
+library(&quot;patchwork&quot;)
+library(&quot;igraph&quot;)
+library(&quot;RANN&quot;)
 
-brain &lt;- merge(brain1, brain2)
-brain</code></pre>
-<p>A coluna <code>region</code>, incluída no conjunto de dados,
-identifica a região anatômica associada a cada spot. Com o código abaixo
-é possível identificar o número de spots em cada região (2696 na
-anterior e 3353 na posterior)</p>
-<pre class="r"><code>table(brain$region)</code></pre>
-<p>Número de features (genes) identificados no objeto brain
-(anterior+posterior):</p>
-<pre class="r"><code>dim(brain)[1]
-#31053</code></pre>
+options(stringsAsFactors = FALSE)</code></pre>
 </div>
-<div id="controle-de-qualidade-dos-spots" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Controle de qualidade
-dos spots</h1>
-<p>As métricas principais são:</p>
+</div>
+<div id="carregar-o-objeto-espacial-produzido-anteriormente" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Carregar o objeto
+espacial produzido anteriormente</h1>
+<pre class="r"><code>brain &lt;- readRDS(
+  file.path(diretorio_dados, &quot;brain.RDS&quot;)
+)
+
+DefaultAssay(brain) &lt;- &quot;SCT&quot;
+Idents(brain) &lt;- &quot;seurat_clusters&quot;
+
+brain
+Images(brain)
+table(brain$region)</code></pre>
+<p>O objeto reúne duas seções físicas distintas. Por isso, os cálculos
+de distância serão feitos separadamente para cada imagem, embora os
+clusters sejam compartilhados entre as seções.</p>
+</div>
+<div id="preparar-as-entradas-do-cellchat" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Preparar as entradas do
+CellChat</h1>
+<p>O CellChat requer quatro componentes principais para dados
+espaciais:</p>
 <ul>
-<li><code>nCount_Spatial</code>: número total de transcritos detectados
-no spot;</li>
-<li><code>nFeature_Spatial</code>: número de genes detectados; e</li>
-<li><code>percent.mt</code>: porcentagem de transcritos provenientes de
-genes mitocondriais.</li>
+<li><code>data.input</code>: matriz normalizada de genes por spots;</li>
+<li><code>meta</code>: rótulos dos clusters e das amostras;</li>
+<li><code>spatial.locs</code>: coordenadas espaciais em resolução
+completa; e</li>
+<li><code>spatial.factors</code>: fatores usados para converter pixels
+em micrômetros.</li>
 </ul>
-<pre class="r"><code>brain[[&quot;percent.mt&quot;]] &lt;- Seurat::PercentageFeatureSet(
+<div id="expressão-normalizada-e-metadados" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Expressão normalizada
+e metadados</h2>
+<pre class="r"><code>data.input &lt;- GetAssayData(
   brain,
-  pattern = &quot;^mt-&quot;
-)</code></pre>
-<div id="número-de-transcritos" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> Número de
-transcritos</h2>
-<pre class="r"><code>vln_contagens &lt;- VlnPlot(
-  brain,
-  features = &quot;nCount_Spatial&quot;,
-  pt.size = 0
-) + NoLegend()
-
-mapa_contagens_anterior &lt;- SpatialFeaturePlot(
-  brain,
-  features = &quot;nCount_Spatial&quot;,
-  images = &quot;anterior1&quot;
+  assay = &quot;SCT&quot;,
+  layer = &quot;data&quot;
 )
 
-mapa_contagens_posterior &lt;- SpatialFeaturePlot(
-  brain,
-  features = &quot;nCount_Spatial&quot;,
-  images = &quot;posterior1&quot;
+nomes_amostras &lt;- Images(brain)
+
+spots_por_amostra &lt;- lapply(
+  nomes_amostras,
+  function(nome_imagem) Cells(brain[[nome_imagem]])
+)
+names(spots_por_amostra) &lt;- nomes_amostras
+
+amostra_por_spot &lt;- rep(
+  nomes_amostras,
+  lengths(spots_por_amostra)
+)
+names(amostra_por_spot) &lt;- unlist(
+  spots_por_amostra,
+  use.names = FALSE
 )
 
-painel_contagens &lt;- vln_contagens /
-  (mapa_contagens_anterior | mapa_contagens_posterior) +
-  plot_annotation(title = &quot;Transcritos por spot&quot;)
+metadados_brain &lt;- brain[[]]
 
-painel_contagens
+meta &lt;- data.frame(
+  labels = paste0(
+    &quot;cluster_&quot;,
+    metadados_brain[colnames(data.input), &quot;seurat_clusters&quot;]
+  ),
+  samples = amostra_por_spot[colnames(data.input)],
+  row.names = colnames(data.input)
+)
 
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_SpotQC_contagens.png&quot;),
-  plot = painel_contagens,
-  width = 11,
-  height = 7,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
+meta$labels &lt;- factor(meta$labels)
+meta$samples &lt;- factor(meta$samples, levels = nomes_amostras)
+
+table(meta$labels, meta$samples)</code></pre>
 </div>
-<div id="número-de-genes" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Número de genes</h2>
-<pre class="r"><code>vln_genes &lt;- VlnPlot(
-  brain,
-  features = &quot;nFeature_Spatial&quot;,
-  pt.size = 0
-) + NoLegend()
+<div id="coordenadas-e-fatores-espaciais" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Coordenadas e fatores
+espaciais</h2>
+<p>As coordenadas de resolução completa são obtidas de cada imagem do
+objeto Seurat. Como as duas seções podem ter escalas em pixels
+ligeiramente diferentes, o fator de conversão é calculado separadamente.
+Para o Visium, adotamos 100 µm como distância entre centros de spots
+adjacentes e 55 µm como diâmetro teórico do spot.</p>
+<pre class="r"><code>coordenadas_por_amostra &lt;- lapply(
+  nomes_amostras,
+  function(nome_imagem) {
+    coordenadas &lt;- GetTissueCoordinates(
+      brain,
+      image = nome_imagem,
+      scale = NULL,
+      cols = c(&quot;imagerow&quot;, &quot;imagecol&quot;)
+    )
 
-mapa_genes_anterior &lt;- SpatialFeaturePlot(
-  brain,
-  features = &quot;nFeature_Spatial&quot;,
-  images = &quot;anterior1&quot;
+    if (&quot;cell&quot; %in% colnames(coordenadas)) {
+      rownames(coordenadas) &lt;- coordenadas$cell
+      coordenadas$cell &lt;- NULL
+    }
+
+    coordenadas[
+      spots_por_amostra[[nome_imagem]],
+      c(&quot;imagerow&quot;, &quot;imagecol&quot;),
+      drop = FALSE
+    ]
+  }
 )
+names(coordenadas_por_amostra) &lt;- nomes_amostras
 
-mapa_genes_posterior &lt;- SpatialFeaturePlot(
-  brain,
-  features = &quot;nFeature_Spatial&quot;,
-  images = &quot;posterior1&quot;
+spatial.locs &lt;- do.call(
+  rbind,
+  unname(coordenadas_por_amostra)
 )
+spatial.locs &lt;- spatial.locs[colnames(data.input), , drop = FALSE]
 
-painel_genes &lt;- vln_genes /
-  (mapa_genes_anterior | mapa_genes_posterior) +
-  plot_annotation(title = &quot;Genes detectados por spot&quot;)
+spot.size &lt;- 55
+distancia_centros &lt;- 100
 
-painel_genes
+spatial.factors &lt;- do.call(
+  rbind,
+  lapply(
+    coordenadas_por_amostra,
+    function(coordenadas) {
+      distancias &lt;- computeCellDistance(coordinates = coordenadas)
+      menor_distancia &lt;- min(distancias[distancias != 0])
 
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_SpotQC_genes.png&quot;),
-  plot = painel_genes,
-  width = 11,
-  height = 7,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
+      data.frame(
+        ratio = distancia_centros / menor_distancia,
+        tol = spot.size / 2
+      )
+    }
+  )
+)
+rownames(spatial.factors) &lt;- nomes_amostras
+
+spatial.factors</code></pre>
 </div>
-<div id="porcentagem-mitocondrial" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> Porcentagem
-mitocondrial</h2>
-<pre class="r"><code>vln_mitocondrial &lt;- VlnPlot(
-  brain,
-  features = &quot;percent.mt&quot;,
-  pt.size = 0
-) + NoLegend()
-
-mapa_mt_anterior &lt;- SpatialFeaturePlot(
-  brain,
-  features = &quot;percent.mt&quot;,
-  images = &quot;anterior1&quot;
+<div id="criar-o-objeto-cellchat" class="section level2" number="4.3">
+<h2><span class="header-section-number">4.3</span> Criar o objeto
+CellChat</h2>
+<pre class="r"><code>cellchat &lt;- createCellChat(
+  object = data.input,
+  meta = meta,
+  group.by = &quot;labels&quot;,
+  datatype = &quot;spatial&quot;,
+  coordinates = spatial.locs,
+  spatial.factors = spatial.factors
 )
 
-mapa_mt_posterior &lt;- SpatialFeaturePlot(
-  brain,
-  features = &quot;percent.mt&quot;,
-  images = &quot;posterior1&quot;
-)
-
-painel_mitocondrial &lt;- vln_mitocondrial /
-  (mapa_mt_anterior | mapa_mt_posterior) +
-  plot_annotation(title = &quot;Porcentagem mitocondrial por spot&quot;)
-
-painel_mitocondrial
-
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_SpotQC_mitocondrial.png&quot;),
-  plot = painel_mitocondrial,
-  width = 11,
-  height = 7,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
-<p>Neste conjunto didático, o perfil das métricas é utilizado para
-inspeção e nenhum limiar adicional de filtragem será aplicado.</p>
-<p>Caso você queira filtrar de acordo com alguma parâmetro dos
-metadados, corra o código abaixo. Para essa vinheta, ele é OPCIONAL,
-então é possível pulá-lo. Nessa exemplo é aplicado um filtro que passam
-apenas spots que tenham mais de 200 genes identificados; que possuam
-mais de 500 counts; e que possuam mais de 5% de mitocôndria.</p>
-<pre class="r"><code>brain_filt &lt;- subset(brain, subset = nFeature_Spatial &gt; 200 &amp;
-                       nCount_Spatial &gt; 500 &amp; 
-                       percent.mt &gt; 5)
-print(&quot;ANTES DE FILTRAR&quot;)
-print(paste(&quot;Número de spots:&quot;,dim(brain)[2]))
-print(paste(&quot;Número de genes:&quot;,dim(brain)[1]))
-
-table(brain$region)
-print(&quot;DEPOIS DE FILTRAR&quot;)
-print(paste(&quot;Número de spots:&quot;,dim(brain_filt)[2]))
-print(paste(&quot;Número de genes:&quot;,dim(brain_filt)[1]))
-
-table(brain_filt$region)</code></pre>
-<p>Com esse exemplo, foram excluídos 11 spots da região anterior e 298
-da região posterior. Para comparar os novos parâmetros, rode os gráficos
-acima com o dado filtrado <code>brain_filt</code>.</p>
+cellchat</code></pre>
 </div>
 </div>
-<div id="pré-processamento-e-clusterização" class="section level1" number="5">
-<h1><span class="header-section-number">5</span> Pré-processamento e
-clusterização</h1>
-<p><code>SCTransform()</code> normaliza os dados e estabiliza a
-variância. Em seguida, os componentes principais são utilizados para
-construir UMAP, t-SNE, grafo de vizinhança e clusters.</p>
-<p>Essas etapas são as mais demoradas da vinheta, principalmente
-SCTransform(). Curiosidade: ao rodar, será mostrado o tempo que levou
-para rodar as análises no seu computador.</p>
-<pre class="r"><code>set.seed(20260906)
+<div id="definir-a-base-de-interações-ligantereceptor" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Definir a base de
+interações ligante–receptor</h1>
+<p>Como o conjunto <code>stxBrain</code> é de camundongo, usaremos
+<code>CellChatDB.mouse</code>. Para manter o tempo de execução adequado
+à atividade didática, a análise será restrita à categoria
+<strong>Secreted Signaling</strong>.</p>
+<pre class="r"><code>CellChatDB &lt;- CellChatDB.mouse
+showDatabaseCategory(CellChatDB)
 
-inicio &lt;- Sys.time()
-
-brain &lt;- SCTransform(
-  brain,
-  assay = &quot;Spatial&quot;,
-  do.scale = TRUE,
-  return.only.var.genes = FALSE,
-  verbose = FALSE
+CellChatDB.use &lt;- subsetDB(
+  CellChatDB,
+  search = &quot;Secreted Signaling&quot;,
+  key = &quot;annotation&quot;
 )
 
-fim &lt;- Sys.time()
-tempo &lt;- fim - inicio
-tempo
+cellchat@DB &lt;- CellChatDB.use</code></pre>
+</div>
+<div id="pré-processar-os-dados-de-expressão" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Pré-processar os dados
+de expressão</h1>
+<pre class="r"><code>cellchat &lt;- subsetData(cellchat)
 
-inicio &lt;- Sys.time()
+future::plan(&quot;multisession&quot;, workers = 4)
 
-brain &lt;- RunPCA(brain, verbose = FALSE)
-brain &lt;- RunUMAP(brain, dims = 1:10)
-brain &lt;- RunTSNE(brain, dims = 1:10)
-brain &lt;- FindNeighbors(brain, dims = 1:10)
-brain &lt;- FindClusters(brain, verbose = FALSE)
-
-fim &lt;- Sys.time()
-tempo &lt;- fim - inicio
-tempo</code></pre>
-<p>O objeto processado é salvo na pasta <code>data/</code>, onde poderá
-ser reutilizado nas análises seguintes do curso.</p>
-<pre class="r"><code>saveRDS(
-  brain,
-  file = file.path(diretorio_dados, &quot;brain.RDS&quot;)
+cellchat &lt;- identifyOverExpressedGenes(cellchat)
+cellchat &lt;- identifyOverExpressedInteractions(
+  cellchat,
+  variable.both = FALSE
 )</code></pre>
 </div>
-<div id="visualizar-os-clusters" class="section level1" number="6">
-<h1><span class="header-section-number">6</span> Visualizar os
-clusters</h1>
-<div id="umap-e-t-sne" class="section level2" number="6.1">
-<h2><span class="header-section-number">6.1</span> UMAP e t-SNE</h2>
-<pre class="r"><code>umap_brain &lt;- DimPlot(brain, reduction = &quot;umap&quot;) +
-  labs(title = &quot;UMAP&quot;)
-
-tsne_brain &lt;- DimPlot(brain, reduction = &quot;tsne&quot;) +
-  labs(title = &quot;t-SNE&quot;)
-
-painel_reducoes &lt;- umap_brain | tsne_brain
-painel_reducoes
-
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_clustering_reducoes.png&quot;),
-  plot = painel_reducoes,
-  width = 11,
-  height = 5,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
-</div>
-<div id="distribuição-espacial" class="section level2" number="6.2">
-<h2><span class="header-section-number">6.2</span> Distribuição
-espacial</h2>
-<pre class="r"><code>mapa_clusters &lt;- SpatialDimPlot(brain) +
-  plot_annotation(title = &quot;Distribuição espacial dos clusters&quot;)
-
-mapa_clusters
-
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_clustering_espacial.png&quot;),
-  plot = mapa_clusters,
-  width = 11,
-  height = 5,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
-</div>
-<div id="composição-das-seções" class="section level2" number="6.3">
-<h2><span class="header-section-number">6.3</span> Composição das
-seções</h2>
-<pre class="r"><code>distribuicao_clusters &lt;- as.data.frame(
-  table(brain$seurat_clusters, brain$orig.ident)
-)
-colnames(distribuicao_clusters) &lt;- c(&quot;Cluster&quot;, &quot;Secao&quot;, &quot;Spots&quot;)
-
-p_numero_spots &lt;- ggplot(
-  distribuicao_clusters,
-  aes(x = Secao, y = Spots, fill = Cluster)
-) +
-  geom_col() +
-  coord_flip() +
-  labs(x = &quot;Seção&quot;, y = &quot;Número de spots&quot;)
-
-p_proporcao_spots &lt;- ggplot(
-  distribuicao_clusters,
-  aes(x = Secao, y = Spots, fill = Cluster)
-) +
-  geom_col(position = &quot;fill&quot;) +
-  coord_flip() +
-  labs(x = &quot;Seção&quot;, y = &quot;Proporção de spots&quot;)
-
-painel_composicao &lt;- p_numero_spots | p_proporcao_spots
-painel_composicao
-
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_clustering_composicao.png&quot;),
-  plot = painel_composicao,
-  width = 10,
-  height = 5,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
-</div>
-</div>
-<div id="visualizar-genes-representativos" class="section level1" number="7">
-<h1><span class="header-section-number">7</span> Visualizar genes
-representativos</h1>
-<p>Os genes abaixo destacam populações neuronais e não neuronais
-presentes no tecido. Sua distribuição ajuda a relacionar os clusters aos
-compartimentos anatômicos, mas não substitui uma anotação celular
-completa.</p>
-<pre class="r"><code>genes &lt;- c(
-  &quot;Hpca&quot;, &quot;Nrgn&quot;, # neurônios
-  &quot;Plp1&quot;,         # oligodendrócitos
-  &quot;Aif1&quot;,         # micróglia
-  &quot;Gfap&quot;,         # astrócitos
-  &quot;Ttr&quot;,          # células do plexo coroide
-  &quot;Mgp&quot;           # fibroblastos
+<div id="inferir-a-comunicação-entre-os-clusters" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> Inferir a comunicação
+entre os clusters</h1>
+<p>Nesta etapa, as interações são limitadas a 150 µm. As comunicações
+dependentes de contato são restringidas a 100 µm, aproximadamente a
+distância entre os centros de spots adjacentes no Visium. A execução
+pode levar vários minutos, dependendo do computador.</p>
+<pre class="r"><code>cellchat &lt;- computeCommunProb(
+  cellchat,
+  type = &quot;triMean&quot;,
+  distance.use = TRUE,
+  interaction.range = 150,
+  scale.distance = 0.01,
+  contact.range = 100,
+  contact.dependent = TRUE,
+  contact.knn.k = 6,
+  nboot = 100
 )
 
-painel_genes_marcadores &lt;- SpatialFeaturePlot(
+cellchat &lt;- filterCommunication(
+  cellchat,
+  min.cells = 10
+)</code></pre>
+<pre class="r"><code>df.net &lt;- subsetCommunication(
+  cellchat,
+  thresh = 0.05
+)
+
+df.net &lt;- df.net %&gt;%
+  mutate(
+    source = as.character(source),
+    target = as.character(target)
+  )
+
+head(df.net)</code></pre>
+</div>
+<div id="projetar-as-comunicações-para-pares-de-spots" class="section level1" number="8">
+<h1><span class="header-section-number">8</span> Projetar as
+comunicações para pares de spots</h1>
+<p>Agora identificaremos os pares de spots separados por até 150 µm
+dentro de cada seção. Depois, cada par receberá os clusters de origem e
+destino e será combinado às interações inferidas pelo CellChat.</p>
+<pre class="r"><code>interaction.range &lt;- 150
+
+criar_pares_vizinhos &lt;- function(nome_amostra) {
+  spots &lt;- spots_por_amostra[[nome_amostra]]
+  coordenadas &lt;- coordenadas_por_amostra[[nome_amostra]]
+
+  coordenadas_um &lt;- coordenadas *
+    spatial.factors[nome_amostra, &quot;ratio&quot;]
+
+  matriz_distancias &lt;- as.matrix(dist(coordenadas_um))
+  diag(matriz_distancias) &lt;- Inf
+
+  indices &lt;- which(
+    matriz_distancias &lt;= interaction.range,
+    arr.ind = TRUE
+  )
+
+  tibble(
+    source_spot = rownames(matriz_distancias)[indices[, 1]],
+    target_spot = colnames(matriz_distancias)[indices[, 2]],
+    distance_um = matriz_distancias[indices],
+    sample = nome_amostra
+  )
+}
+
+spot.pairs &lt;- bind_rows(
+  lapply(nomes_amostras, criar_pares_vizinhos)
+)
+
+spot.groups &lt;- tibble(
+  spot = rownames(cellchat@meta),
+  group = as.character(cellchat@idents)
+)
+
+spot.pairs &lt;- spot.pairs %&gt;%
+  left_join(
+    spot.groups,
+    by = c(&quot;source_spot&quot; = &quot;spot&quot;)
+  ) %&gt;%
+  rename(source = group) %&gt;%
+  left_join(
+    spot.groups,
+    by = c(&quot;target_spot&quot; = &quot;spot&quot;)
+  ) %&gt;%
+  rename(target = group)
+
+head(spot.pairs)</code></pre>
+<pre class="r"><code>spot.to.spot.communication &lt;- spot.pairs %&gt;%
+  inner_join(
+    df.net,
+    by = c(&quot;source&quot;, &quot;target&quot;)
+  ) %&gt;%
+  arrange(
+    sample,
+    source_spot,
+    target_spot,
+    pathway_name,
+    interaction_name
+  )
+
+head(spot.to.spot.communication)
+
+saveRDS(
+  spot.to.spot.communication,
+  file = file.path(
+    diretorio_resultados,
+    &quot;spot-spot_commu_Allbrain.rds&quot;
+  )
+)</code></pre>
+</div>
+<div id="construir-a-rede-espacial-no-rgraphspace" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> Construir a rede
+espacial no RGraphSpace</h1>
+<p>Nesta parte, selecionaremos uma das seções para visualizar. Altere
+<code>amostra_visualizacao</code> para outro nome retornado por
+<code>Images(brain)</code> caso queira repetir o procedimento na seção
+posterior.</p>
+<pre class="r"><code>amostra_visualizacao &lt;- &quot;anterior1&quot;
+spots_visualizacao &lt;- spots_por_amostra[[amostra_visualizacao]]
+
+coordenadas_gs &lt;- GetTissueCoordinates(
   brain,
-  features = genes,
-  ncol = 2
+  image = amostra_visualizacao,
+  scale = &quot;lowres&quot;
 )
 
-painel_genes_marcadores
+if (&quot;cell&quot; %in% colnames(coordenadas_gs)) {
+  rownames(coordenadas_gs) &lt;- coordenadas_gs$cell
+  coordenadas_gs$cell &lt;- NULL
+}
 
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;Brain_Genes.png&quot;),
-  plot = painel_genes_marcadores,
-  width = 12,
-  height = 18,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;,
-  limitsize = FALSE
-)</code></pre>
-</div>
-<div id="identificando-genes-espacialmente-variáveis-svgs" class="section level1" number="8">
-<h1><span class="header-section-number">8</span> Identificando Genes
-Espacialmente Variáveis (SVGs)</h1>
-<p>SVGs são genes que a distribuição da sua expressão gênica é
-dependente da localização. Em outras palavras, a distribuição da
-expressão de um SVG não é aleatória ao longo das coordenadas XY.</p>
-<div id="baseado-em-dados-pré-anotados" class="section level2" number="8.1">
-<h2><span class="header-section-number">8.1</span> Baseado em dados
-pré-anotados</h2>
-<p>A função <code>FindMarkers()</code> do <code>Seurat</code> que
-realiza um cálculo de expressão diferencial entre dois fatores
-pré-anotados. Para esse exemplo, serão utilizados dois clusteres que
-foram calculados anteriormente, a informação de clusteres fica
-armazenada nos metadados do objeto <code>Seurat</code>.</p>
-<p>Para prosseguir com o exemplo dessas análises, iremos trabalhar
-apenas com região <code>anterior</code>. Para isso, será feito um subset
-do objeto <code>brain</code>.</p>
-<pre class="r"><code># subset da região
-brain_ant &lt;- subset(brain, subset = region == &quot;anterior&quot;)
+coordenadas_gs &lt;- coordenadas_gs[
+  spots_visualizacao,
+  c(&quot;x&quot;, &quot;y&quot;),
+  drop = FALSE
+]
 
-# Foram selecionados os clusteres 1 e 10 para a análise do FindMarkers
-SpatialDimPlot(brain_ant,
-               cells.highlight = CellsByIdentities(object = brain, idents = c(1,10)),
-               facet.highlight = TRUE,ncol = 2)</code></pre>
-<pre class="r"><code># Prepara os diferentes modelos SCT para expressão diferencial
-brain_ant &lt;- PrepSCTFindMarkers(
-  brain_ant,
-  assay = &quot;SCT&quot;
+metadados_gs &lt;- brain[[]][spots_visualizacao, , drop = FALSE]
+gs &lt;- GraphSpace(cbind(coordenadas_gs, metadados_gs))
+
+gs_fdata(gs) &lt;- LayerData(
+  brain,
+  assay = &quot;SCT&quot;,
+  layer = &quot;data&quot;
+)[, spots_visualizacao, drop = FALSE]
+
+gs_image(gs) &lt;- GetImage(
+  brain[[amostra_visualizacao]],
+  mode = &quot;raster&quot;
 )
 
-# Procura &quot;marcadores&quot; das regiões selecionadas
-de_markers &lt;- FindMarkers(
-  brain_ant,
-  ident.1 = &quot;1&quot;,
-  ident.2 = &quot;10&quot;,
-  assay = &quot;SCT&quot;
+gs &lt;- normalizeGraphSpace(gs)</code></pre>
+<pre class="r"><code>spatial_theme &lt;- theme_gspace_coords(
+  theme = &quot;th3&quot;,
+  is_norm = TRUE,
+  xlab = &quot;Coordenada espacial 1&quot;,
+  ylab = &quot;Coordenada espacial 2&quot;
 )
 
-de_markers</code></pre>
-<pre class="r"><code>g &lt;- SpatialFeaturePlot(object = brain_ant,
-                        features = rownames(de_markers)[1:3],
-                        alpha = c(0.1, 1), ncol = 3)
+cpal1 &lt;- DiscretePalette(
+  nlevels(gs$seurat_clusters),
+  &quot;polychrome&quot;
+)
 
-g
+ggplot(gs) +
+  annotation_gspace_image(gs) +
+  geom_nodespace(
+    mapping = aes(colour = seurat_clusters),
+    size = 0.8,
+    pch = 19
+  ) +
+  scale_colour_manual(values = cpal1) +
+  theme_gspace_legend(discrete_colour = TRUE) +
+  spatial_theme</code></pre>
+<div id="adicionar-as-relações-de-proximidade" class="section level2" number="9.1">
+<h2><span class="header-section-number">9.1</span> Adicionar as relações
+de proximidade</h2>
+<p>A função abaixo conecta cada spot aos seis vizinhos mais próximos,
+respeitando o arranjo hexagonal esperado da lâmina Visium. Spots das
+bordas podem ter menos vizinhos.</p>
+<pre class="r"><code>proximityNetwork &lt;- function(gs, nnei = 6) {
+  nodes &lt;- gs@nodes
 
-# Salvar figura
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;FindMarkers.png&quot;),
-  plot = g,
-  width = 6,
-  height = 3,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;,
-  limitsize = FALSE
-)</code></pre>
+  vizinhos &lt;- RANN::nn2(
+    nodes[, c(&quot;x&quot;, &quot;y&quot;)],
+    nodes[, c(&quot;x&quot;, &quot;y&quot;)],
+    k = nnei + 1
+  )
+
+  distancias &lt;- as.data.frame(
+    vizinhos$nn.dists[, 2:(nnei + 1)]
+  )
+  indices &lt;- as.data.frame(
+    vizinhos$nn.idx[, 2:(nnei + 1)]
+  )
+
+  distancia_tipica &lt;- 1 / mean(1 / distancias$V1)
+  manter &lt;- distancias
+  manter[, 1] &lt;- TRUE
+  manter[, 2:ncol(manter)] &lt;-
+    distancias[, 2:ncol(distancias)] &gt;= 0.95 * distancia_tipica &amp;
+    distancias[, 2:ncol(distancias)] &lt;= 1.05 * distancia_tipica
+
+  matriz_arestas &lt;- manter * indices
+  matriz_arestas$from &lt;- row.names(matriz_arestas)
+
+  arestas &lt;- matriz_arestas %&gt;%
+    pivot_longer(
+      cols = -from,
+      names_to = &quot;vizinho&quot;,
+      values_to = &quot;to&quot;
+    ) %&gt;%
+    filter(to != 0) %&gt;%
+    transmute(
+      from = as.numeric(from),
+      to = as.numeric(to),
+      v1 = pmin(from, to),
+      v2 = pmax(from, to)
+    ) %&gt;%
+    distinct(v1, v2) %&gt;%
+    transmute(
+      from = nodes$name[v1],
+      to = nodes$name[v2]
+    )
+
+  gs_add_edges(gs) &lt;- arestas
+  gs
+}</code></pre>
+<pre class="r"><code>ggplot(gs) +
+  annotation_gspace_image(gs) +
+  geom_edgespace() +
+  geom_nodespace(
+    mapping = aes(colour = seurat_clusters),
+    size = 3,
+    pch = 19
+  ) +
+  scale_colour_manual(values = cpal1) +
+  theme_gspace_legend(discrete_colour = TRUE) +
+  spatial_theme +
+  coord_cartesian(xlim = c(0.4, 0.6), ylim = c(0.4, 0.6))</code></pre>
+<pre class="r"><code>gs &lt;- proximityNetwork(gs)
+
+ggplot(gs) +
+  annotation_gspace_image(gs) +
+  geom_edgespace() +
+  geom_nodespace(
+    mapping = aes(colour = seurat_clusters),
+    size = 3,
+    pch = 19
+  ) +
+  scale_colour_manual(values = cpal1) +
+  theme_gspace_legend(discrete_colour = TRUE) +
+  spatial_theme +
+  coord_cartesian(xlim = c(0.4, 0.6), ylim = c(0.4, 0.6))</code></pre>
 </div>
-<div id="sem-necessidade-de-dados-pré-anotatos" class="section level2" number="8.2">
-<h2><span class="header-section-number">8.2</span> Sem necessidade de
-dados pré-anotatos</h2>
-<p>A função <code>FindSpatiallyVariableFeatures()</code> do
-<code>Seurat</code> utiliza métodos estatísticas que calculam quanto
-quea expressão de determinado gene é dependente da localização
-(coordenadas XY). Abaixo, vamos utilizar o <em>I de Moran</em>, uma
-estatística de pode ser entendida como a correlação da expressão em
-relação à localizações próximas, também chamada de autocorrelação
-espacial.</p>
-<p>Para fins de demonstração, vamos calcular a estatística para apenas
-100 genes. Você pode alterar o valor de acordo com a sua vontade, mas
-quanto maior for, mais tempo vai levar.</p>
-<pre class="r"><code>brain_ant_I &lt;- FindSpatiallyVariableFeatures(brain_ant,
-                                       features = VariableFeatures(brain)[1:100],
-                                       selection.method = &quot;moransi&quot;)</code></pre>
-<pre class="r"><code># Seis maiores SVGs identificados
-top.features &lt;- head(SpatiallyVariableFeatures(brain_ant_I, method = &quot;moransi&quot;), 6)
+</div>
+<div id="associar-as-comunicações-às-arestas-de-proximidade" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Associar as
+comunicações às arestas de proximidade</h1>
+<p>As arestas do <code>GraphSpace</code> são não direcionadas, mas a
+comunicação ligante–receptor possui uma origem e um destino. Por isso,
+criaremos as duas orientações de cada aresta antes de associá-las às
+comunicações do CellChat.</p>
+<pre class="r"><code>arestas &lt;- gs@edges %&gt;%
+  select(name1, name2)
 
-# Apesar de análise ter sido feita apenas com a região anterior,
-# podemos plotar o gráfico com as duas regiões.
-g &lt;- SpatialFeaturePlot(brain, 
-                        features = top.features, ncol = 2, alpha = c(0.1, 1)) &amp; 
-  theme(plot.margin = unit(c(1, 1, 1, 1), &quot;mm&quot;))
+arestas_direcionadas &lt;- bind_rows(
+  arestas,
+  arestas %&gt;% transmute(name1 = name2, name2 = name1)
+) %&gt;%
+  distinct()
 
-g
+spotCom_dt &lt;- arestas_direcionadas %&gt;%
+  inner_join(
+    spot.to.spot.communication %&gt;%
+      filter(sample == amostra_visualizacao),
+    by = c(
+      &quot;name1&quot; = &quot;source_spot&quot;,
+      &quot;name2&quot; = &quot;target_spot&quot;
+    )
+  )
 
-# Salvar figura
-ggsave(
-  filename = file.path(diretorio_imagens, &quot;SVGs.png&quot;),
-  plot = g,
-  width = 10,
-  height = 12,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;,
-  limitsize = FALSE
-)</code></pre>
-<p>Note que nesse caso não se aplica o conceito de Gene Diferencialmente
-Expresso (DEG), pois não é uma comparação entre caso vs. controle.
-Ainda, não se aplica o conceito de Fold Change, por não ter uma
-referência ou por não ser uma comparação entre dois genes. Métodos que
-identificam SVGs descrevem a natureza da distribuição da expressão de um
-gene em relação ao espaço geográfico. Existem diversos métodos na
-literatura que identificam SVGs, como: I de Moran,SpatialDE,nnSVG,
-SPARK-X, MERINGUE.</p>
+spotCom_dt$arrowType &lt;- 1
+
+interacoes_disponiveis &lt;- spotCom_dt %&gt;%
+  select(ligand, receptor, interaction_name) %&gt;%
+  filter(!is.na(ligand), !is.na(receptor)) %&gt;%
+  distinct()
+
+head(interacoes_disponiveis)</code></pre>
+</div>
+<div id="projetar-uma-interação-com-pathwayspace" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> Projetar uma interação
+com PathwaySpace</h1>
+<p>A função <code>communication_pathwayspace()</code> mantém os spots
+envolvidos em uma interação, constrói o objeto
+<code>PathwaySpace</code>, soma a expressão do ligante e do receptor e
+projeta esse sinal na rede. Nomes separados por sublinhado são tratados
+como complexos formados por mais de um gene.</p>
+<pre class="r"><code>communication_pathwayspace &lt;- function(gs, lig, recep, spotCom_dt) {
+  comunicacoes &lt;- spotCom_dt %&gt;%
+    filter(ligand == lig, receptor == recep)
+
+  spots_selecionados &lt;- unique(
+    c(comunicacoes$name1, comunicacoes$name2)
+  )
+
+  gs_selecionado &lt;- gs_subset_nodes(gs, spots_selecionados)
+  pspace_obj &lt;- buildPathwaySpace(gs_selecionado)
+
+  distancia_spots &lt;- getNearestNode(pspace_obj)
+  pdist &lt;- mean(distancia_spots$dist)
+
+  pspace_obj &lt;- silhouetteMapping(
+    pspace_obj,
+    baseline = 0.1
+  )
+
+  resolver_features &lt;- function(rotulo, features_disponiveis) {
+    if (rotulo %in% features_disponiveis) {
+      return(rotulo)
+    }
+
+    componentes &lt;- strsplit(rotulo, &quot;_&quot;, fixed = TRUE)[[1]]
+    features_disponiveis[
+      match(tolower(componentes), tolower(features_disponiveis))
+    ]
+  }
+
+  features_disponiveis &lt;- colnames(pspace_obj@fdata)
+  features_ligante &lt;- resolver_features(lig, features_disponiveis)
+  features_receptor &lt;- resolver_features(recep, features_disponiveis)
+
+  if (anyNA(c(features_ligante, features_receptor))) {
+    stop(&quot;O ligante ou o receptor não foi encontrado nos dados de expressão.&quot;)
+  }
+
+  sinal_ligante &lt;- rowSums(
+    as.matrix(
+      pspace_obj@fdata[, features_ligante, drop = FALSE]
+    )
+  )
+  sinal_receptor &lt;- rowSums(
+    as.matrix(
+      pspace_obj@fdata[, features_receptor, drop = FALSE]
+    )
+  )
+
+  vertexSignal(pspace_obj) &lt;- sinal_ligante + sinal_receptor
+
+  pspace_obj &lt;- circularProjection(
+    pspace_obj,
+    decay.fun = weibullDecay(decay = 0.5, pdist = pdist),
+    aggregate.fun = signalAggregation(&quot;wmean&quot;),
+    k = gs_vcount(pspace_obj)
+  )
+
+  pspace_obj
+}</code></pre>
+<div id="visualizar-um-exemplo" class="section level2" number="11.1">
+<h2><span class="header-section-number">11.1</span> Visualizar um
+exemplo</h2>
+<p>Usaremos a primeira interação disponível na seção escolhida. Se
+preferir investigar um par específico, substitua
+<code>ligante_exemplo</code> e <code>receptor_exemplo</code> pelos
+símbolos desejados.</p>
+<pre class="r"><code>ligante_exemplo &lt;- interacoes_disponiveis$ligand[1]
+receptor_exemplo &lt;- interacoes_disponiveis$receptor[1]
+
+pspace_obj &lt;- communication_pathwayspace(
+  gs = gs,
+  lig = ligante_exemplo,
+  recep = receptor_exemplo,
+  spotCom_dt = spotCom_dt
+)
+
+grafico_exemplo &lt;- ggplot(pspace_obj) +
+  annotation_gspace_image(pspace_obj) +
+  annotation_pspace_signal(pspace_obj, si.alpha = 0.25) +
+  spatial_theme +
+  labs(
+    title = paste(ligante_exemplo, &quot;-&quot;, receptor_exemplo)
+  )
+
+grafico_exemplo</code></pre>
 </div>
 </div>
-<div id="arquivos-produzidos" class="section level1" number="9">
-<h1><span class="header-section-number">9</span> Arquivos
+<div id="salvar-as-figuras-das-interações" class="section level1" number="12">
+<h1><span class="header-section-number">12</span> Salvar as figuras das
+interações</h1>
+<p>Para a atividade em sala, serão exportadas as três primeiras
+interações. Para gerar todas as figuras, substitua a definição de
+<code>numero_interacoes</code> por
+<code>nrow(interacoes_disponiveis)</code>.</p>
+<pre class="r"><code>numero_interacoes &lt;- min(3, nrow(interacoes_disponiveis))
+
+for (i in seq_len(numero_interacoes)) {
+  ligante &lt;- interacoes_disponiveis$ligand[i]
+  receptor &lt;- interacoes_disponiveis$receptor[i]
+
+  pspace_i &lt;- communication_pathwayspace(
+    gs = gs,
+    lig = ligante,
+    recep = receptor,
+    spotCom_dt = spotCom_dt
+  )
+
+  grafico_i &lt;- ggplot(pspace_i) +
+    annotation_gspace_image(pspace_i) +
+    annotation_pspace_signal(pspace_i, si.alpha = 0.25) +
+    spatial_theme +
+    labs(title = paste(ligante, &quot;-&quot;, receptor))
+
+  nome_arquivo &lt;- paste0(
+    &quot;CellChat_PathwaySpace_&quot;,
+    amostra_visualizacao,
+    &quot;_&quot;,
+    ligante,
+    &quot;-&quot;,
+    receptor,
+    &quot;.png&quot;
+  )
+
+  nome_arquivo &lt;- gsub(
+    &quot;[^[:alnum:]_.-]&quot;,
+    &quot;_&quot;,
+    nome_arquivo
+  )
+
+  ggsave(
+    filename = file.path(diretorio_imagens, nome_arquivo),
+    plot = grafico_i,
+    width = 9,
+    height = 6,
+    units = &quot;in&quot;,
+    dpi = 120,
+    bg = &quot;white&quot;
+  )
+
+  rm(pspace_i, grafico_i)
+  gc()
+}</code></pre>
+</div>
+<div id="arquivos-produzidos" class="section level1" number="13">
+<h1><span class="header-section-number">13</span> Arquivos
 produzidos</h1>
-<p>Ao concluir a vinheta, os seguintes arquivos estarão disponíveis:</p>
+<p>Ao concluir a vinheta, estarão disponíveis:</p>
 <ul>
-<li><code>data/brain.RDS</code>: objeto Seurat normalizado, reduzido e
-clusterizado;</li>
-<li><code>imagens/Brain_SpotQC_contagens.png</code>;</li>
-<li><code>imagens/Brain_SpotQC_genes.png</code>;</li>
-<li><code>imagens/Brain_SpotQC_mitocondrial.png</code>;</li>
-<li><code>imagens/Brain_clustering_reducoes.png</code>;</li>
-<li><code>imagens/Brain_clustering_espacial.png</code>;</li>
-<li><code>imagens/Brain_clustering_composicao.png</code>; e</li>
-<li><code>imagens/Brain_Genes.png</code>.</li>
+<li><code>resultados/spot-spot_commu_Allbrain.rds</code>: tabela de
+comunicações projetadas entre spots das duas seções;</li>
+<li><code>imagens/CellChat_PathwaySpace_&lt;seção&gt;_&lt;ligante&gt;-&lt;receptor&gt;.png</code>:
+projeções das interações selecionadas; e</li>
+<li>os objetos intermediários <code>cellchat</code>, <code>gs</code>,
+<code>spot.to.spot.communication</code> e <code>spotCom_dt</code> na
+sessão do R.</li>
 </ul>
 </div>
-<div id="informações-da-sessão" class="section level1" number="10">
-<h1><span class="header-section-number">10</span> Informações da
+<div id="informações-da-sessão" class="section level1" number="14">
+<h1><span class="header-section-number">14</span> Informações da
 sessão</h1>
-<pre class="r"><code>sessionInfo()</code></pre>
 </div>
-<div id="referências" class="section level1" number="11">
-<h1><span class="header-section-number">11</span> Referências</h1>
+<div id="referências" class="section level1 unnumbered">
+<h1 class="unnumbered">Referências</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-Ellrott2025CancerSubtypes" class="csl-entry">
+Ellrott, Kyle, Christopher K. Wong, Christina Yau, Mauro A. A. Castro,
+Jordan A. Lee, Brian J. Karlberg, Jasleen K. Grewal, et al. 2025.
+<span>“Classification of Non-<span>TCGA</span> Cancer Samples to
+<span>TCGA</span> Molecular Subtypes Using Compact Feature Sets.”</span>
+<em>Cancer Cell</em> 43 (2): 195–212.e11. <a href="https://doi.org/10.1016/j.ccell.2024.12.002">https://doi.org/10.1016/j.ccell.2024.12.002</a>.
+</div>
+<div id="ref-Hao2023Seurat" class="csl-entry">
+Hao, Yuhan, Tim Stuart, Madeline H. Kowalski, Saket Choudhary, Paul
+Hoffman, Austin Hartman, Avi Srivastava, et al. 2024. <span>“Dictionary
+Learning for Integrative, Multimodal and Scalable Single-Cell
+Analysis.”</span> <em>Nature Biotechnology</em> 42: 293–304. <a href="https://doi.org/10.1038/s41587-023-01767-y">https://doi.org/10.1038/s41587-023-01767-y</a>.
+</div>
+<div id="ref-Jin2021CellChat" class="csl-entry">
+Jin, Suoqin, Christian F. Guerrero-Juarez, Lihua Zhang, Ivan Chang, Raul
+Ramos, Chen-Hsiang Kuan, Peggy Myung, Maksim V. Plikus, and Qing Nie.
+2021. <span>“Inference and Analysis of Cell-Cell Communication Using
+<span>CellChat</span>.”</span> <em>Nature Communications</em> 12 (1):
+1088. <a href="https://doi.org/10.1038/s41467-021-21246-9">https://doi.org/10.1038/s41467-021-21246-9</a>.
+</div>
+<div id="ref-Jin2025CellChat" class="csl-entry">
+Jin, Suoqin, Maksim V. Plikus, and Qing Nie. 2025.
+<span>“<span>CellChat</span> for Systematic Analysis of Cell–Cell
+Communication from Single-Cell Transcriptomics.”</span> <em>Nature
+Protocols</em> 20 (1): 180–219. <a href="https://doi.org/10.1038/s41596-024-01045-4">https://doi.org/10.1038/s41596-024-01045-4</a>.
+</div>
+<div id="ref-RGraphSpace2026" class="csl-entry">
+Sysbiolab Team. 2026. <em><span>RGraphSpace</span>: A Lightweight
+Interface Between ’Igraph’ and ’Ggplot2’ Graphics</em>. <a href="https://sysbiolab.github.io/RGraphSpace/">https://sysbiolab.github.io/RGraphSpace/</a>.
+</div>
+<div id="ref-Tercan2025PathwaySpace" class="csl-entry">
+Tercan, Bahar, Victor H. Apolonio, Vinicius S. Chagas, Christopher K.
+Wong, Jordan A. Lee, Christina Yau, Christopher C. Benz, et al. 2025.
+<span>“Protocol for Assessing Distances in Pathway Space for Classifier
+Feature Sets from Machine Learning Methods.”</span> <em>STAR
+Protocols</em> 6 (2): 103681. <a href="https://doi.org/10.1016/j.xpro.2025.103681">https://doi.org/10.1016/j.xpro.2025.103681</a>.
+</div>
+</div>
 </div>
 
 

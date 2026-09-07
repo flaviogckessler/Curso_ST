@@ -55,8 +55,9 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 ## Vinhetas
 
 -   [Configuração do ambiente RStudio](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
--   [Controle de qualidade, pré-processamento e clusterização de dados espaciais](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC3_Controle_de_qualidade_preprocessamento_clusterizacao_espacial.html)
+-   [Controle de qualidade, pré-processamento e clusterização de dados espaciais](https://flaviogckessler.github.io/Curso_ST/vinhetas/Controle_de_qualidade_preprocessamento_clusterizacao_espacial.html)
 -   [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html)
+- [Comunicação Celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html)
 
 ## Ministrante
 

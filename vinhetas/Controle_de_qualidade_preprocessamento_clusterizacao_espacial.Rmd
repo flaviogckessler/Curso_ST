@@ -271,6 +271,7 @@ print(paste("Número de genes:",dim(brain_filt)[1]))
 
 table(brain_filt$region)
 ```
+
 Com esse exemplo, foram excluídos 11 spots da região anterior e 298 da região posterior. Para comparar os novos parâmetros, rode os gráficos acima com o dado filtrado `brain_filt`.
 
 # Pré-processamento e clusterização
@@ -433,6 +434,102 @@ ggsave(
   limitsize = FALSE
 )
 ```
+
+# Identificando Genes Espacialmente Variáveis (SVGs)
+
+SVGs são genes que a distribuição da sua expressão gênica é dependente da localização. Em outras palavras, a distribuição da expressão de um SVG não é aleatória ao longo das coordenadas XY.
+
+## Baseado em dados pré-anotados
+
+A função `FindMarkers()` do `Seurat` que realiza um cálculo de expressão diferencial entre dois fatores pré-anotados. Para esse exemplo, serão utilizados dois clusteres que foram calculados anteriormente, a informação de clusteres fica armazenada nos metadados do objeto `Seurat`.
+
+Para prosseguir com o exemplo dessas análises, iremos trabalhar apenas com região `anterior`. Para isso, será feito um subset do objeto `brain`.
+
+```{r clusters-selecionados, fig.width=6, fig.height=4}
+# subset da região
+brain_ant <- subset(brain, subset = region == "anterior")
+
+# Foram selecionados os clusteres 1 e 10 para a análise do FindMarkers
+SpatialDimPlot(brain_ant,
+               cells.highlight = CellsByIdentities(object = brain, idents = c(1,10)),
+               facet.highlight = TRUE,ncol = 2)
+```
+
+```{r find-markers}
+# Prepara os diferentes modelos SCT para expressão diferencial
+brain_ant <- PrepSCTFindMarkers(
+  brain_ant,
+  assay = "SCT"
+)
+
+# Procura "marcadores" das regiões selecionadas
+de_markers <- FindMarkers(
+  brain_ant,
+  ident.1 = "1",
+  ident.2 = "10",
+  assay = "SCT"
+)
+
+de_markers
+```
+
+```{r plot-markers, fig.width=6, fig.height=3}
+g <- SpatialFeaturePlot(object = brain_ant,
+                        features = rownames(de_markers)[1:3],
+                        alpha = c(0.1, 1), ncol = 3)
+
+g
+
+# Salvar figura
+ggsave(
+  filename = file.path(diretorio_imagens, "FindMarkers.png"),
+  plot = g,
+  width = 6,
+  height = 3,
+  units = "in",
+  dpi = 120,
+  bg = "white",
+  limitsize = FALSE
+)
+```
+
+## Sem necessidade de dados pré-anotatos
+
+A função `FindSpatiallyVariableFeatures()` do `Seurat` utiliza métodos estatísticas que calculam quanto quea expressão de determinado gene é dependente da localização (coordenadas XY). Abaixo, vamos utilizar o *I de Moran*, uma estatística de pode ser entendida como a correlação da expressão em relação à localizações próximas, também chamada de autocorrelação espacial.
+
+Para fins de demonstração, vamos calcular a estatística para apenas 100 genes. Você pode alterar o valor de acordo com a sua vontade, mas quanto maior for, mais tempo vai levar.
+
+```{r monransI}
+brain_ant_I <- FindSpatiallyVariableFeatures(brain_ant,
+                                       features = VariableFeatures(brain)[1:100],
+                                       selection.method = "moransi")
+```
+```{r plot-monransI, fig.width=12, fig.height=12}
+# Seis maiores SVGs identificados
+top.features <- head(SpatiallyVariableFeatures(brain_ant_I, method = "moransi"), 6)
+
+# Apesar de análise ter sido feita apenas com a região anterior,
+# podemos plotar o gráfico com as duas regiões.
+g <- SpatialFeaturePlot(brain, 
+                        features = top.features, ncol = 2, alpha = c(0.1, 1)) & 
+  theme(plot.margin = unit(c(1, 1, 1, 1), "mm"))
+
+g
+
+# Salvar figura
+ggsave(
+  filename = file.path(diretorio_imagens, "SVGs.png"),
+  plot = g,
+  width = 10,
+  height = 12,
+  units = "in",
+  dpi = 120,
+  bg = "white",
+  limitsize = FALSE
+)
+```
+
+Note que nesse caso não se aplica o conceito de Gene Diferencialmente Expresso (DEG), pois não é uma comparação entre caso vs. controle. Ainda, não se aplica o conceito de Fold Change, por não ter uma referência ou por não ser uma comparação entre dois genes. Métodos que identificam SVGs descrevem a natureza da distribuição da expressão de um gene em relação ao espaço geográfico. Existem diversos métodos na literatura que identificam SVGs, como: I de Moran,SpatialDE,nnSVG, SPARK-X, MERINGUE.
 
 # Arquivos produzidos
 
