@@ -54,10 +54,11 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 
 ## Vinhetas
 
--   [Configuração do ambiente RStudio](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
--   [Controle de qualidade, pré-processamento e clusterização de dados espaciais](https://flaviogckessler.github.io/Curso_ST/vinhetas/Controle_de_qualidade_preprocessamento_clusterizacao_espacial.html)
--   [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html)
-- [Comunicação Celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html)
+1.  [Configuração do ambiente RStudio](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html)
+2.  [Controle de qualidade, pré-processamento e clusterização de dados espaciais](https://flaviogckessler.github.io/Curso_ST/vinhetas/Controle_de_qualidade_preprocessamento_clusterizacao_espacial.html) — Aula 2
+3.  [Visualização contínua de dados espaciais com PathwaySpace](https://flaviogckessler.github.io/Curso_ST/vinhetas/Visualizacao_Continua_PathwaySpace.html) — Aula 2
+4.  [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html)
+5.  [Comunicação celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html)
 
 ## Leituras recomendadas
 

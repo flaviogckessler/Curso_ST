@@ -8,3 +8,6 @@
 
 # Base de dados local muito grande
 /data/brain.RDS
+
+# Arquivos temporários do Microsoft Office
+~$*

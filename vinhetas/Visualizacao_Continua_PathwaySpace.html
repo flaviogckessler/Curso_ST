@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2026-05-18" />
+  <title>Visualização de dados de transcriptômica espacial com PathwaySpace</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+      margin-bottom: 0em;
+    }
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Visualização de dados de transcriptômica espacial com
+PathwaySpace</h1>
+<p class="author">true</p>
+<p class="date">2026-05-18</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#visão-geral" id="toc-visão-geral"><span
+class="toc-section-number">1</span> Visão geral</a></li>
+<li><a href="#preparar-o-ambiente" id="toc-preparar-o-ambiente"><span
+class="toc-section-number">2</span> Preparar o ambiente</a>
+<ul>
+<li><a href="#definir-as-pastas" id="toc-definir-as-pastas"><span
+class="toc-section-number">2.1</span> Definir as pastas</a></li>
+<li><a href="#instalar-o-pathwayspace"
+id="toc-instalar-o-pathwayspace"><span
+class="toc-section-number">2.2</span> Instalar o PathwaySpace</a></li>
+<li><a href="#carregar-os-pacotes" id="toc-carregar-os-pacotes"><span
+class="toc-section-number">2.3</span> Carregar os pacotes</a></li>
+</ul></li>
+<li><a href="#carregar-e-inspecionar-o-objeto-espacial"
+id="toc-carregar-e-inspecionar-o-objeto-espacial"><span
+class="toc-section-number">3</span> Carregar e inspecionar o objeto
+espacial</a></li>
+<li><a href="#selecionar-a-região-anterior"
+id="toc-selecionar-a-região-anterior"><span
+class="toc-section-number">4</span> Selecionar a região
+anterior</a></li>
+<li><a href="#selecionar-e-visualizar-um-gene-de-interesse"
+id="toc-selecionar-e-visualizar-um-gene-de-interesse"><span
+class="toc-section-number">5</span> Selecionar e visualizar um gene de
+interesse</a></li>
+<li><a href="#construir-o-espaço-gráfico"
+id="toc-construir-o-espaço-gráfico"><span
+class="toc-section-number">6</span> Construir o espaço gráfico</a>
+<ul>
+<li><a href="#obter-coordenadas-imagem-e-expressão"
+id="toc-obter-coordenadas-imagem-e-expressão"><span
+class="toc-section-number">6.1</span> Obter coordenadas, imagem e
+expressão</a></li>
+<li><a href="#criar-e-normalizar-o-graphspace"
+id="toc-criar-e-normalizar-o-graphspace"><span
+class="toc-section-number">6.2</span> Criar e normalizar o
+<code>GraphSpace</code></a></li>
+<li><a href="#conferir-a-sobreposição-espacial"
+id="toc-conferir-a-sobreposição-espacial"><span
+class="toc-section-number">6.3</span> Conferir a sobreposição
+espacial</a></li>
+</ul></li>
+<li><a href="#construir-o-pathwayspace"
+id="toc-construir-o-pathwayspace"><span
+class="toc-section-number">7</span> Construir o PathwaySpace</a>
+<ul>
+<li><a href="#calcular-a-distância-entre-spots"
+id="toc-calcular-a-distância-entre-spots"><span
+class="toc-section-number">7.1</span> Calcular a distância entre
+spots</a></li>
+<li><a href="#mapear-a-silhueta-do-tecido"
+id="toc-mapear-a-silhueta-do-tecido"><span
+class="toc-section-number">7.2</span> Mapear a silhueta do
+tecido</a></li>
+</ul></li>
+<li><a href="#projetar-o-sinal-gênico"
+id="toc-projetar-o-sinal-gênico"><span
+class="toc-section-number">8</span> Projetar o sinal gênico</a></li>
+<li><a href="#visualizar-a-projeção"
+id="toc-visualizar-a-projeção"><span class="toc-section-number">9</span>
+Visualizar a projeção</a>
+<ul>
+<li><a href="#separar-a-imagem-e-o-sinal-projetado"
+id="toc-separar-a-imagem-e-o-sinal-projetado"><span
+class="toc-section-number">9.1</span> Separar a imagem e o sinal
+projetado</a></li>
+<li><a href="#sobrepor-a-projeção-à-imagem"
+id="toc-sobrepor-a-projeção-à-imagem"><span
+class="toc-section-number">9.2</span> Sobrepor a projeção à
+imagem</a></li>
+<li><a href="#destacar-os-valores-mais-altos"
+id="toc-destacar-os-valores-mais-altos"><span
+class="toc-section-number">9.3</span> Destacar os valores mais
+altos</a></li>
+</ul></li>
+<li><a href="#comparar-seurat-e-pathwayspace"
+id="toc-comparar-seurat-e-pathwayspace"><span
+class="toc-section-number">10</span> Comparar Seurat e
+PathwaySpace</a></li>
+<li><a href="#arquivo-produzido" id="toc-arquivo-produzido"><span
+class="toc-section-number">11</span> Arquivo produzido</a></li>
+<li><a href="#informações-da-sessão"
+id="toc-informações-da-sessão"><span
+class="toc-section-number">12</span> Informações da sessão</a></li>
+<li><a href="#referências" id="toc-referências">Referências</a></li>
+</ul>
+</nav>
+<h1 data-number="1" id="visão-geral"><span
+class="header-section-number">1</span> Visão geral</h1>
+<p>Nesta vinheta, visualizaremos a expressão do gene
+<code>Camk2n1</code> na região anterior de uma seção de cérebro de
+camundongo. Primeiro, o sinal será observado diretamente nos spots com o
+Seurat. Em seguida, as coordenadas dos spots e a imagem histológica
+serão organizadas em um <code>GraphSpace</code>, a partir do qual o
+PathwaySpace produzirá uma representação contínua da expressão no tecido
+<span class="citation" data-cites="Tercan2025PathwaySpace">(<a
+href="#ref-Tercan2025PathwaySpace" role="doc-biblioref">Tercan et al.
+2025</a>)</span>.</p>
+<p>O objeto de entrada é <code>data/brain.RDS</code>, produzido na etapa
+anterior do curso. O fluxo segue a ordem do script
+<code>DOC5_SpatialTranscriptomics_Visualization.R</code>: inspeção do
+objeto, seleção da região anterior, escolha do gene, construção do
+espaço gráfico, projeção do sinal e comparação das visualizações.</p>
+<p>A versão HTML, quando for produzida, apresentará o roteiro sem
+executar a análise. Durante o curso, abra este arquivo <code>.Rmd</code>
+no RStudio e execute os blocos na ordem em que aparecem.</p>
+<h1 data-number="2" id="preparar-o-ambiente"><span
+class="header-section-number">2</span> Preparar o ambiente</h1>
+<h2 data-number="2.1" id="definir-as-pastas"><span
+class="header-section-number">2.1</span> Definir as pastas</h2>
+<p>Antes de executar o código, defina o diretório de trabalho como a
+pasta <code>vinhetas/</code>. No RStudio, use <strong>Session &gt; Set
+Working Directory &gt; To Source File Location</strong>. O objeto será
+carregado de <code>data/</code> e a figura final será gravada em formato
+PNG na pasta <code>imagens/</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>diretorio_vinhetas <span class="ot">&lt;-</span> <span class="fu">getwd</span>()</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>diretorio_curso <span class="ot">&lt;-</span> <span class="fu">dirname</span>(diretorio_vinhetas)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>diretorio_dados <span class="ot">&lt;-</span> <span class="fu">file.path</span>(diretorio_curso, <span class="st">&quot;data&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>diretorio_imagens <span class="ot">&lt;-</span> <span class="fu">file.path</span>(diretorio_curso, <span class="st">&quot;imagens&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(diretorio_imagens, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<h2 data-number="2.2" id="instalar-o-pathwayspace"><span
+class="header-section-number">2.2</span> Instalar o PathwaySpace</h2>
+<p>Caso o pacote ainda não tenha sido instalado durante a preparação do
+ambiente, execute o bloco abaixo uma única vez e reinicie a sessão do
+R.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;sysbiolab/PathwaySpace&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">build_vignettes =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h2 data-number="2.3" id="carregar-os-pacotes"><span
+class="header-section-number">2.3</span> Carregar os pacotes</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;dplyr&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;Seurat&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;SeuratObject&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;PathwaySpace&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;patchwork&quot;</span>)</span></code></pre></div>
+<h1 data-number="3" id="carregar-e-inspecionar-o-objeto-espacial"><span
+class="header-section-number">3</span> Carregar e inspecionar o objeto
+espacial</h1>
+<p>O arquivo <code>brain.RDS</code> contém o objeto Seurat já processado
+nas etapas anteriores do curso.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>brain <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(diretorio_dados, <span class="st">&quot;brain.RDS&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">SpatialDimPlot</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">label.size =</span> <span class="dv">3</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h1 data-number="4" id="selecionar-a-região-anterior"><span
+class="header-section-number">4</span> Selecionar a região anterior</h1>
+<p>Como a projeção será demonstrada em uma única seção histológica,
+manteremos somente os spots identificados como pertencentes à região
+anterior. A distribuição espacial dos clusters é exibida novamente após
+o recorte.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>brain <span class="ot">&lt;-</span> <span class="fu">subset</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">subset =</span> region <span class="sc">==</span> <span class="st">&quot;anterior&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">SpatialDimPlot</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">label.size =</span> <span class="dv">3</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h1 data-number="5"
+id="selecionar-e-visualizar-um-gene-de-interesse"><span
+class="header-section-number">5</span> Selecionar e visualizar um gene
+de interesse</h1>
+<p>O gene <code>Camk2n1</code> será usado como exemplo. O mapa do Seurat
+representa sua expressão diretamente nos spots medidos e será armazenado
+no objeto <code>g</code> para a comparação final.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>gene <span class="ot">&lt;-</span> <span class="st">&quot;Camk2n1&quot;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">SpatialFeaturePlot</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">features =</span> gene,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">3</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="dv">1</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Seurat&quot;</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>g</span></code></pre></div>
+<h1 data-number="6" id="construir-o-espaço-gráfico"><span
+class="header-section-number">6</span> Construir o espaço gráfico</h1>
+<h2 data-number="6.1" id="obter-coordenadas-imagem-e-expressão"><span
+class="header-section-number">6.1</span> Obter coordenadas, imagem e
+expressão</h2>
+<p>As coordenadas em baixa resolução posicionam os spots sobre a imagem
+histológica. A matriz da camada <code>data</code> fornece a expressão
+normalizada por transformação de estabilização da variância (VST) que
+será atribuída aos vértices do grafo.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coordenadas dos spots</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>spot_coord <span class="ot">&lt;-</span> <span class="fu">GetTissueCoordinates</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;lowres&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Imagem histológica em formato raster</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>raster_image <span class="ot">&lt;-</span> <span class="fu">GetImage</span>(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;raster&quot;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Expressão gênica normalizada por VST</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>vst_gexp <span class="ot">&lt;-</span> <span class="fu">GetAssayData</span>(</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  brain,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">layer =</span> <span class="st">&quot;data&quot;</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h2 data-number="6.2" id="criar-e-normalizar-o-graphspace"><span
+class="header-section-number">6.2</span> Criar e normalizar o
+<code>GraphSpace</code></h2>
+<p>Cada spot será tratado como um vértice. O tamanho dos vértices é
+reduzido para facilitar a inspeção visual. Em seguida,
+<code>normalizeGraphSpace()</code> alinha as coordenadas cartesianas do
+grafo à orientação matricial da imagem.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>spot_coord<span class="sc">$</span>nodeSize <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>gs <span class="ot">&lt;-</span> <span class="fu">GraphSpace</span>(spot_coord)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>gs <span class="ot">&lt;-</span> <span class="fu">normalizeGraphSpace</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  gs,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">image =</span> raster_image</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h2 data-number="6.3" id="conferir-a-sobreposição-espacial"><span
+class="header-section-number">6.3</span> Conferir a sobreposição
+espacial</h2>
+<p>O gráfico abaixo sobrepõe os vértices à imagem do tecido. Se as
+coordenadas de outro conjunto estiverem invertidas no eixo vertical, o
+argumento <code>flip.y = TRUE</code> poderá ser usado em
+<code>normalizeGraphSpace()</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>xy_labs <span class="ot">&lt;-</span> <span class="fu">labs</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">&quot;Coordenada dos spots 1&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">&quot;Coordenada dos spots 2&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plotGraphSpace</span>(</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  gs,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">add.image =</span> <span class="cn">TRUE</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  xy_labs</span></code></pre></div>
+<h1 data-number="7" id="construir-o-pathwayspace"><span
+class="header-section-number">7</span> Construir o PathwaySpace</h1>
+<h2 data-number="7.1" id="calcular-a-distância-entre-spots"><span
+class="header-section-number">7.1</span> Calcular a distância entre
+spots</h2>
+<p>O <code>PathwaySpace</code> é construído a partir do espaço gráfico.
+A distância média ao spot mais próximo (<code>pdist</code>) será usada
+como referência espacial pela função de decaimento da projeção.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pspace_obj <span class="ot">&lt;-</span> <span class="fu">buildPathwaySpace</span>(gs)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>nspot <span class="ot">&lt;-</span> <span class="fu">getNearestNode</span>(pspace_obj)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>pdist <span class="ot">&lt;-</span> <span class="fu">mean</span>(nspot<span class="sc">$</span>dist)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>pdist</span></code></pre></div>
+<h2 data-number="7.2" id="mapear-a-silhueta-do-tecido"><span
+class="header-section-number">7.2</span> Mapear a silhueta do
+tecido</h2>
+<p>A silhueta delimita a área sobre a qual o sinal será projetado. O
+valor de base controla a extensão inicial dessa representação em torno
+do grafo.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>pspace_obj <span class="ot">&lt;-</span> <span class="fu">silhouetteMapping</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  pspace_obj,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">baseline =</span> <span class="fl">0.1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPathwaySpace</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">ps =</span> pspace_obj,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="st">&quot;th3&quot;</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">add.image =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">si.alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  xy_labs</span></code></pre></div>
+<h1 data-number="8" id="projetar-o-sinal-gênico"><span
+class="header-section-number">8</span> Projetar o sinal gênico</h1>
+<p>A expressão de <code>Camk2n1</code> é associada aos vértices
+correspondentes aos spots. A projeção circular espalha esse sinal no
+espaço contínuo, ponderando a contribuição de cada spot pela distância e
+agregando as contribuições por média ponderada.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vertexSignal</span>(pspace_obj)[<span class="fu">colnames</span>(vst_gexp)] <span class="ot">&lt;-</span> vst_gexp[gene, ]</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>pspace_obj <span class="ot">&lt;-</span> <span class="fu">circularProjection</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  pspace_obj,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="fu">gs_vcount</span>(pspace_obj),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">decay.fun =</span> <span class="fu">weibullDecay</span>(</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">decay =</span> <span class="fl">0.5</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">pdist =</span> pdist</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">aggregate.fun =</span> <span class="fu">signalAggregation</span>(<span class="st">&quot;wmean&quot;</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h1 data-number="9" id="visualizar-a-projeção"><span
+class="header-section-number">9</span> Visualizar a projeção</h1>
+<h2 data-number="9.1" id="separar-a-imagem-e-o-sinal-projetado"><span
+class="header-section-number">9.1</span> Separar a imagem e o sinal
+projetado</h2>
+<p>O primeiro painel mostra a imagem do tecido e o segundo apresenta o
+sinal contínuo produzido pelo PathwaySpace.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">plotPathwaySpace</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">ps =</span> pspace_obj,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="st">&quot;th3&quot;</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> gene</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>p1<span class="sc">$</span>image <span class="ot">&lt;-</span> p1<span class="sc">$</span>image <span class="sc">+</span> xy_labs</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>p1<span class="sc">$</span>graph <span class="ot">&lt;-</span> p1<span class="sc">$</span>graph <span class="sc">+</span> xy_labs</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>p1<span class="sc">$</span>image <span class="sc">+</span> p1<span class="sc">$</span>graph</span></code></pre></div>
+<h2 data-number="9.2" id="sobrepor-a-projeção-à-imagem"><span
+class="header-section-number">9.2</span> Sobrepor a projeção à
+imagem</h2>
+<p>Com <code>add.image = TRUE</code>, a projeção é mostrada sobre o
+tecido. A transparência da silhueta é definida como 0,25 para preservar
+a leitura da imagem histológica.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPathwaySpace</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">ps =</span> pspace_obj,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="st">&quot;th3&quot;</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> gene,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">add.image =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">si.alpha =</span> <span class="fl">0.25</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  xy_labs</span></code></pre></div>
+<h2 data-number="9.3" id="destacar-os-valores-mais-altos"><span
+class="header-section-number">9.3</span> Destacar os valores mais
+altos</h2>
+<p>Nesta visualização, a escala é truncada para o intervalo de 0,5 a 1.
+Assim, o painel enfatiza as áreas com maior sinal projetado.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">plotPathwaySpace</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">ps =</span> pspace_obj,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="st">&quot;th3&quot;</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">add.image =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">si.alpha =</span> <span class="fl">0.25</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">zlim =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">1</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;PathwaySpace&quot;</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div>
+<h1 data-number="10" id="comparar-seurat-e-pathwayspace"><span
+class="header-section-number">10</span> Comparar Seurat e
+PathwaySpace</h1>
+<p>O painel final coloca lado a lado a expressão observada nos spots
+pelo Seurat e a projeção contínua produzida pelo PathwaySpace.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>g <span class="sc">+</span> p</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>painel_comparacao <span class="ot">&lt;-</span> gridExtra<span class="sc">::</span><span class="fu">arrangeGrob</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  g,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  p,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">2</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="fu">file.path</span>(</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    diretorio_imagens,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Brain_anterior_Camk2n1.png&quot;</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot =</span> painel_comparacao,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">10</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">5</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">units =</span> <span class="st">&quot;in&quot;</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">dpi =</span> <span class="dv">120</span>,</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="st">&quot;white&quot;</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h1 data-number="11" id="arquivo-produzido"><span
+class="header-section-number">11</span> Arquivo produzido</h1>
+<p>Ao concluir a vinheta, a comparação final estará disponível em
+<code>imagens/Brain_anterior_Camk2n1.png</code>.</p>
+<h1 data-number="12" id="informações-da-sessão"><span
+class="header-section-number">12</span> Informações da sessão</h1>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<h1 class="unnumbered" id="referências">Referências</h1>
+<div id="refs" class="references csl-bib-body hanging-indent"
+data-entry-spacing="0" role="list">
+<div id="ref-Tercan2025PathwaySpace" class="csl-entry" role="listitem">
+Tercan, Bahar, Victor H. Apolonio, Vinicius S. Chagas, Christopher K.
+Wong, Jordan A. Lee, Christina Yau, Christopher C. Benz, et al. 2025.
+<span>“Protocol for assessing distances in pathway space for classifier
+feature sets from machine learning methods”</span>. <em>STAR
+Protocols</em> 6 (2): 103681. <a
+href="https://doi.org/10.1016/j.xpro.2025.103681">https://doi.org/10.1016/j.xpro.2025.103681</a>.
+</div>
+</div>
+</body>
+</html>
