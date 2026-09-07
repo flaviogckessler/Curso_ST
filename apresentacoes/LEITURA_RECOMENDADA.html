@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Leituras recomendadas do curso Análise de Dados de Transcriptômica Espacial, organizadas por formato e vinculadas aos slides da Aula 1.">
+  <meta name="theme-color" content="#0b1f33">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="Leitura recomendada">
+  <meta property="og:description" content="Artigos, livros, tutoriais, vídeos e recursos citados no curso, com acesso direto às fontes.">
+  <meta property="og:url" content="https://flaviogckessler.github.io/Curso_ST/apresentacoes/LEITURA_RECOMENDADA.html">
+  <link rel="canonical" href="https://flaviogckessler.github.io/Curso_ST/apresentacoes/LEITURA_RECOMENDADA.html">
+    <link rel="stylesheet" href="leitura-recomendada.css">
+    <title>Leitura
+recomendada · Curso de Transcriptômica Espacial</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+/* The extra [class] is a hack that increases specificity enough to
+   override a similar rule in reveal.js */
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  font-size: inherit;
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para as leituras</a>
+  <header class="site-header">
+    <a class="brand" href="https://flaviogckessler.github.io/Curso_ST/" aria-label="Página inicial do curso">
+      <span class="brand-mark" aria-hidden="true">ST</span>
+      <span><strong>Curso_ST</strong><small>Transcriptômica espacial</small></span>
+    </a>
+    <a class="repo-link" href="https://github.com/flaviogckessler/Curso_ST">Ver repositório <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <section class="hero" aria-labelledby="page-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Roteiro de estudo · Aula 1</p>
+      <h1 id="page-title">Leituras<br><em>recomendadas</em></h1>
+      <p class="hero-intro">Artigos fundamentais, revisões, tutoriais e recursos para aprofundar os conceitos apresentados no curso.</p>
+      <dl class="hero-stats" aria-label="Resumo da coleção">
+        <div><dt id="total-resources">26</dt><dd>recursos</dd></div>
+        <div><dt>5</dt><dd>formatos</dd></div>
+        <div><dt>1</dt><dd>aula mapeada</dd></div>
+      </dl>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <span class="orb orb-a"></span><span class="orb orb-b"></span><span class="orb orb-c"></span>
+      <span class="line line-a"></span><span class="line line-b"></span>
+      <span class="coordinate">RNA · espaço · contexto</span>
+    </div>
+  </section>
+
+  <div class="page-shell">
+    <aside class="sidebar" aria-label="Navegação e filtros">
+      <div class="sidebar-inner">
+        <p class="sidebar-label">Nesta página</p>
+        <ul>
+        <li><a href="#leitura-recomendada"
+        id="toc-leitura-recomendada">Leitura recomendada</a>
+        <ul>
+        <li><a href="#aula-1" id="toc-aula-1">Aula 1 — Introdução à
+        transcriptômica espacial</a>
+        <ul>
+        <li><a href="#artigos-cientificos"
+        id="toc-artigos-cientificos">Artigos científicos</a></li>
+        <li><a href="#livro-e-capitulo-on-line"
+        id="toc-livro-e-capitulo-on-line">Livro e capítulo
+        on-line</a></li>
+        <li><a href="#tutoriais-e-documentacao"
+        id="toc-tutoriais-e-documentacao">Tutoriais e
+        documentação</a></li>
+        <li><a href="#videos" id="toc-videos">Vídeos</a></li>
+        <li><a href="#sites-e-repositorios"
+        id="toc-sites-e-repositorios">Sites e repositórios</a></li>
+        </ul></li>
+        <li><a href="#referencias"
+        id="toc-referencias">Referências</a></li>
+        </ul></li>
+        </ul>
+        <a class="source-link" href="LEITURA_RECOMENDADA.md">Consultar fonte em Markdown <span aria-hidden="true">→</span></a>
+      </div>
+    </aside>
+
+    <main id="conteudo" class="reading-content">
+      <section class="toolbar" aria-label="Filtrar leituras">
+        <label class="search-wrap" for="search">
+          <span aria-hidden="true">⌕</span>
+          <span class="sr-only">Buscar nas leituras</span>
+          <input id="search" type="search" placeholder="Buscar por título, tema ou descrição…" autocomplete="off">
+          <kbd aria-hidden="true">/</kbd>
+        </label>
+        <div class="filters" role="group" aria-label="Filtrar por formato">
+          <button class="filter active" type="button" data-filter="all" aria-pressed="true">Todos</button>
+          <button class="filter" type="button" data-filter="artigos-cientificos" aria-pressed="false">Artigos</button>
+          <button class="filter" type="button" data-filter="livro-e-capitulo-on-line" aria-pressed="false">Livro</button>
+          <button class="filter" type="button" data-filter="tutoriais-e-documentacao" aria-pressed="false">Tutoriais</button>
+          <button class="filter" type="button" data-filter="videos" aria-pressed="false">Vídeos</button>
+          <button class="filter" type="button" data-filter="sites-e-repositorios" aria-pressed="false">Sites</button>
+        </div>
+        <p class="result-count" id="result-count" role="status" aria-live="polite"></p>
+      </section>
+
+      <div class="source-content">
+<h1 id="leitura-recomendada">Leitura recomendada</h1>
+<p>Este arquivo reúne os materiais citados nas apresentações do curso.
+As referências bibliográficas de artigos e livros estão cadastradas em
+<a href="../bibliography.bib"><code>bibliography.bib</code></a>. Os
+números de slide indicam onde cada material aparece na apresentação
+original.</p>
+<h2 id="aula-1">Aula 1 — Introdução à transcriptômica espacial</h2>
+<p>Apresentação: <a
+href="Aula%201%20-%20Introdução%20à%20transcriptômica%20espacial.pptx"><code>Aula 1 - Introdução à transcriptômica espacial.pptx</code></a></p>
+<h3 id="artigos-cientificos">Artigos científicos</h3>
+<ul>
+<li><a href="https://doi.org/10.1038/nbt.2282"><strong>Full-length
+mRNA-Seq from single-cell levels of RNA and individual circulating tumor
+cells</strong></a> — trabalho que apresenta o Smart-seq para obtenção de
+transcriptomas completos a partir de células individuais. <span
+class="citation" data-cites="Ramskold2012SmartSeq">(<a
+href="#ref-Ramskold2012SmartSeq" role="doc-biblioref">Ramsköld et al.
+2012</a>)</span> <em>(slide 18)</em></li>
+<li><a href="https://doi.org/10.1038/ncomms14049"><strong>Massively
+parallel digital transcriptional profiling of single cells</strong></a>
+— descrição da plataforma Chromium para perfil transcricional de células
+individuais em grande escala. <span class="citation"
+data-cites="Zheng2017Chromium">(<a href="#ref-Zheng2017Chromium"
+role="doc-biblioref">Zheng et al. 2017</a>)</span> <em>(slide
+19)</em></li>
+<li><a
+href="https://doi.org/10.1186/s12864-022-09014-5"><strong>Benchmarking
+full-length transcript single cell mRNA sequencing
+protocols</strong></a> — comparação de protocolos de sequenciamento de
+RNA de célula única com cobertura do transcrito completo. <span
+class="citation" data-cites="Probst2022Benchmarking">(<a
+href="#ref-Probst2022Benchmarking" role="doc-biblioref">Probst et al.
+2022</a>)</span> <em>(slides 21 e 26)</em></li>
+<li><a href="https://doi.org/10.1186/s13073-017-0467-4"><strong>A
+practical guide to single-cell RNA-sequencing for biomedical research
+and clinical applications</strong></a> — guia introdutório para
+planejamento experimental, escolha de protocolo, controle de qualidade e
+análise de scRNA-seq. <span class="citation"
+data-cites="Haque2017PracticalGuide">(<a
+href="#ref-Haque2017PracticalGuide" role="doc-biblioref">Haque et al.
+2017</a>)</span> <em>(slide 27)</em></li>
+<li><a href="https://doi.org/10.1093/nar/gkae1186"><strong>A
+comprehensive analysis framework for evaluating commercial single-cell
+RNA sequencing technologies</strong></a> — avaliação comparativa de
+tecnologias comerciais de scRNA-seq. <span class="citation"
+data-cites="DeSimone2025Commercial">(<a
+href="#ref-DeSimone2025Commercial" role="doc-biblioref">De Simone et al.
+2025</a>)</span> <em>(slide 27)</em></li>
+<li><a
+href="https://doi.org/10.1126/science.280.5363.585"><strong>Visualization
+of single RNA transcripts in situ</strong></a> — trabalho fundador sobre
+detecção e quantificação de moléculas individuais de RNA por
+hibridização <em>in situ</em>. <span class="citation"
+data-cites="Femino1998SingleRNA">(<a href="#ref-Femino1998SingleRNA"
+role="doc-biblioref">Femino et al. 1998</a>)</span> <em>(slide
+29)</em></li>
+<li><a href="https://doi.org/10.1038/4806"><strong>Gene expression
+profiles of laser-captured adjacent neuronal subtypes</strong></a> —
+aplicação de microdissecção a laser e amplificação de RNA para comparar
+perfis de expressão de populações neuronais adjacentes. <span
+class="citation" data-cites="Luo1999LaserCapture">(<a
+href="#ref-Luo1999LaserCapture" role="doc-biblioref">Luo et al.
+1999</a>)</span> <em>(slide 29)</em></li>
+<li><a
+href="https://doi.org/10.1126/science.aaf2403"><strong>Visualization and
+analysis of gene expression in tissue sections by spatial
+transcriptomics</strong></a> — artigo seminal que introduziu a
+estratégia denominada <em>spatial transcriptomics</em>. <span
+class="citation" data-cites="Stahl2016SpatialTranscriptomics">(<a
+href="#ref-Stahl2016SpatialTranscriptomics" role="doc-biblioref">Ståhl
+et al. 2016</a>)</span> <em>(slide 30)</em></li>
+<li><a href="https://doi.org/10.1038/s41592-020-01033-y"><strong>Method
+of the Year: spatially resolved transcriptomics</strong></a> — panorama
+da transcriptômica espacial como método do ano de 2020 pela <em>Nature
+Methods</em>. <span class="citation"
+data-cites="Marx2021MethodOfTheYear">(<a
+href="#ref-Marx2021MethodOfTheYear" role="doc-biblioref">Marx
+2021</a>)</span> <em>(slide 31)</em></li>
+<li><a
+href="https://doi.org/10.1016/j.ygeno.2023.110671"><strong>Spatial
+transcriptomics: Technologies, applications and experimental
+considerations</strong></a> — revisão comparativa de plataformas,
+aplicações e critérios para planejamento experimental. <span
+class="citation" data-cites="Wang2023SpatialTechnologies">(<a
+href="#ref-Wang2023SpatialTechnologies" role="doc-biblioref">Wang et al.
+2023</a>)</span> <em>(slide 32)</em></li>
+<li><a
+href="https://doi.org/10.1038/s41588-025-02193-3"><strong>High-definition
+spatial transcriptomic profiling of immune cell populations in
+colorectal cancer</strong></a> — apresentação e avaliação do Visium HD
+em amostras de câncer colorretal. <span class="citation"
+data-cites="DeOliveira2025VisiumHD">(<a
+href="#ref-DeOliveira2025VisiumHD" role="doc-biblioref">Oliveira et al.
+2025</a>)</span> <em>(slide 37)</em></li>
+<li><a href="https://doi.org/10.1038/s41576-022-00515-3"><strong>The
+emerging landscape of spatial profiling technologies</strong></a> —
+revisão das principais abordagens de perfil molecular espacial e de suas
+características técnicas. <span class="citation"
+data-cites="Moffitt2022SpatialProfiling">(<a
+href="#ref-Moffitt2022SpatialProfiling" role="doc-biblioref">Moffitt,
+Lundberg, and Heyn 2022</a>)</span> <em>(slide 39)</em></li>
+<li><a href="https://doi.org/10.15252/msb.20188746"><strong>Current best
+practices in single-cell RNA-seq analysis: a tutorial</strong></a> —
+tutorial de boas práticas para pré-processamento e análises posteriores
+de scRNA-seq. <span class="citation"
+data-cites="Luecken2019BestPractices">(<a
+href="#ref-Luecken2019BestPractices" role="doc-biblioref">Luecken and
+Theis 2019</a>)</span> <em>(slide 42)</em></li>
+<li><a href="https://doi.org/10.1186/s12864-024-10414-y"><strong>A
+comprehensive workflow for optimizing RNA-seq data analysis</strong></a>
+— fluxo de trabalho para seleção e otimização das etapas de análise de
+RNA-seq. <span class="citation" data-cites="Jiang2024RNASeqWorkflow">(<a
+href="#ref-Jiang2024RNASeqWorkflow" role="doc-biblioref">Jiang et al.
+2024</a>)</span> <em>(slide 42)</em></li>
+</ul>
+<h3 id="livro-e-capitulo-on-line">Livro e capítulo on-line</h3>
+<ul>
+<li><a
+href="https://bioconductor.org/books/3.22/OSTA/pages/seq-reads-to-counts.html"><strong>Orchestrating
+Spatial Transcriptomics Analysis with Bioconductor — Reads to
+counts</strong></a> — capítulo sobre a transformação das leituras de
+sequenciamento em matrizes de contagem, incluindo barcodes espaciais,
+alinhamento, controle de qualidade e contagem. <span class="citation"
+data-cites="Crowell2025OSTA">(<a href="#ref-Crowell2025OSTA"
+role="doc-biblioref">Crowell et al. 2025</a>)</span> <em>(slide
+44)</em></li>
+</ul>
+<h3 id="tutoriais-e-documentacao">Tutoriais e documentação</h3>
+<ul>
+<li><a
+href="https://www.datacamp.com/pt/tutorial/r-studio-tutorial"><strong>Tutorial
+do RStudio para iniciantes: um guia completo</strong></a> — versão em
+português do tutorial introdutório do DataCamp. <em>(slide 9, hiperlink
+embutido)</em></li>
+<li><a
+href="https://www.10xgenomics.com/support/software/space-ranger/latest/algorithms-overview/gene-expression"><strong>Space
+Ranger Algorithms: Read Processing &amp; Secondary Analysis</strong></a>
+— documentação oficial sobre processamento de leituras, alinhamento,
+barcodes, UMIs e análises secundárias do Space Ranger. <em>(slide 42,
+hiperlink embutido)</em></li>
+<li><a
+href="https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html"><strong>Configuração
+do ambiente do RStudio</strong></a> — vinheta do curso para preparar o
+ambiente das aulas práticas. <em>(slide 63, hiperlink
+embutido)</em></li>
+<li><a
+href="https://www.dataquest.io/blog/tutorial-getting-started-with-r-and-rstudio/"><strong>Tutorial:
+Getting Started with R and RStudio</strong></a> — introdução ao R e ao
+RStudio publicada pelo Dataquest. <em>(slide 67)</em></li>
+<li><a
+href="https://rstudio.github.io/renv/articles/renv.html"><strong>Introduction
+to renv</strong></a> — documentação sobre criação de ambientes
+reproduzíveis e isolamento das dependências de projetos em R. <em>(slide
+67)</em></li>
+<li><a
+href="https://www.datacamp.com/tutorial/r-studio-tutorial"><strong>RStudio
+Tutorial for Beginners: A Complete Guide</strong></a> — versão em inglês
+do tutorial introdutório do DataCamp. <em>(slide 67)</em></li>
+</ul>
+<h3 id="videos">Vídeos</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=cH8ldAqKUzE"><strong>Single
+Cell Gene Expression Protocol v3.1: Assemble Chromium Next GEM Chip
+G</strong></a> — demonstração da montagem do chip para o protocolo
+Chromium Single Cell Gene Expression. <em>(slide 27)</em></li>
+<li><a
+href="https://www.youtube.com/playlist?list=PLfaSRwcfHcq1acX1nuTFcUGClpNRPEyHH"><strong>Visium
+Spatial Gene Expression Protocol</strong></a> — série de vídeos sobre o
+protocolo Visium Spatial Gene Expression. <em>(slide 39)</em></li>
+</ul>
+<h3 id="sites-e-repositorios">Sites e repositórios</h3>
+<ul>
+<li><a href="https://github.com/flaviogckessler"><strong>Perfil de
+Flávio Carazza-Kessler no GitHub</strong></a> <em>(slide 6, hiperlink
+embutido)</em></li>
+<li><a href="https://github.com/sysbiolab"><strong>Perfil do SysBioLab
+no GitHub</strong></a> <em>(slide 6, hiperlink embutido)</em></li>
+<li><a
+href="https://github.com/flaviogckessler/Curso_ST"><strong>Repositório
+do curso no GitHub</strong></a> — apresentações, vinhetas e materiais
+das atividades práticas. <em>(slide 62, hiperlink embutido)</em></li>
+</ul>
+<h2 id="referencias">Referências</h2>
+<div id="refs" class="references csl-bib-body hanging-indent"
+data-entry-spacing="0" role="list">
+<div id="ref-Crowell2025OSTA" class="csl-entry" role="listitem">
+Crowell, Helena L. et al. 2025. <em>Orchestrating Spatial
+Transcriptomics Analysis with Bioconductor</em>. Bioconductor. <a
+href="https://bioconductor.org/books/3.22/OSTA/">https://bioconductor.org/books/3.22/OSTA/</a>.
+</div>
+<div id="ref-DeSimone2025Commercial" class="csl-entry" role="listitem">
+De Simone, Marco et al. 2025. <span>“A Comprehensive Analysis Framework
+for Evaluating Commercial Single-Cell <span>RNA</span> Sequencing
+Technologies.”</span> <em>Nucleic Acids Research</em> 53 (2): gkae1186.
+<a
+href="https://doi.org/10.1093/nar/gkae1186">https://doi.org/10.1093/nar/gkae1186</a>.
+</div>
+<div id="ref-Femino1998SingleRNA" class="csl-entry" role="listitem">
+Femino, Andrea M., Fredric S. Fay, Kevin Fogarty, and Robert H. Singer.
+1998. <span>“Visualization of Single <span>RNA</span> Transcripts in
+Situ.”</span> <em>Science</em> 280 (5363): 585–90. <a
+href="https://doi.org/10.1126/science.280.5363.585">https://doi.org/10.1126/science.280.5363.585</a>.
+</div>
+<div id="ref-Haque2017PracticalGuide" class="csl-entry" role="listitem">
+Haque, Ashraful, Jessica Engel, Sarah A. Teichmann, and Tapio Lönnberg.
+2017. <span>“A Practical Guide to Single-Cell
+<span>RNA</span>-Sequencing for Biomedical Research and Clinical
+Applications.”</span> <em>Genome Medicine</em> 9 (1): 75. <a
+href="https://doi.org/10.1186/s13073-017-0467-4">https://doi.org/10.1186/s13073-017-0467-4</a>.
+</div>
+<div id="ref-Jiang2024RNASeqWorkflow" class="csl-entry" role="listitem">
+Jiang, Gao, Juan-Yu Zheng, Shu-Ning Ren, Weilun Yin, Xinli Xia, Yun Li,
+and Hou-Ling Wang. 2024. <span>“A Comprehensive Workflow for Optimizing
+<span class="nocase">RNA-seq</span> Data Analysis.”</span> <em>BMC
+Genomics</em> 25 (1): 631. <a
+href="https://doi.org/10.1186/s12864-024-10414-y">https://doi.org/10.1186/s12864-024-10414-y</a>.
+</div>
+<div id="ref-Luecken2019BestPractices" class="csl-entry"
+role="listitem">
+Luecken, Malte D., and Fabian J. Theis. 2019. <span>“Current Best
+Practices in Single-Cell <span class="nocase">RNA-seq</span> Analysis: A
+Tutorial.”</span> <em>Molecular Systems Biology</em> 15 (6): e8746. <a
+href="https://doi.org/10.15252/msb.20188746">https://doi.org/10.15252/msb.20188746</a>.
+</div>
+<div id="ref-Luo1999LaserCapture" class="csl-entry" role="listitem">
+Luo, Lin, Ranelle C. Salunga, Hongqing Guo, Anton Bittner, K. C. Joy,
+Jose E. Galindo, Huinian Xiao, et al. 1999. <span>“Gene Expression
+Profiles of Laser-Captured Adjacent Neuronal Subtypes.”</span>
+<em>Nature Medicine</em> 5 (1): 117–22. <a
+href="https://doi.org/10.1038/4806">https://doi.org/10.1038/4806</a>.
+</div>
+<div id="ref-Marx2021MethodOfTheYear" class="csl-entry" role="listitem">
+Marx, Vivien. 2021. <span>“Method of the Year: Spatially Resolved
+Transcriptomics.”</span> <em>Nature Methods</em> 18 (1): 9–14. <a
+href="https://doi.org/10.1038/s41592-020-01033-y">https://doi.org/10.1038/s41592-020-01033-y</a>.
+</div>
+<div id="ref-Moffitt2022SpatialProfiling" class="csl-entry"
+role="listitem">
+Moffitt, Jeffrey R., Emma Lundberg, and Holger Heyn. 2022. <span>“The
+Emerging Landscape of Spatial Profiling Technologies.”</span> <em>Nature
+Reviews Genetics</em> 23: 741–59. <a
+href="https://doi.org/10.1038/s41576-022-00515-3">https://doi.org/10.1038/s41576-022-00515-3</a>.
+</div>
+<div id="ref-DeOliveira2025VisiumHD" class="csl-entry" role="listitem">
+Oliveira, Michelli Faria de et al. 2025. <span>“High-Definition Spatial
+Transcriptomic Profiling of Immune Cell Populations in Colorectal
+Cancer.”</span> <em>Nature Genetics</em> 57: 1512–23. <a
+href="https://doi.org/10.1038/s41588-025-02193-3">https://doi.org/10.1038/s41588-025-02193-3</a>.
+</div>
+<div id="ref-Probst2022Benchmarking" class="csl-entry" role="listitem">
+Probst, Victoria, Arman Simonyan, Felix Pacheco, Yuliu Guo, Finn Cilius
+Nielsen, and Frederik Otzen Bagger. 2022. <span>“Benchmarking
+Full-Length Transcript Single Cell <span class="nocase">mRNA</span>
+Sequencing Protocols.”</span> <em>BMC Genomics</em> 23 (1): 860. <a
+href="https://doi.org/10.1186/s12864-022-09014-5">https://doi.org/10.1186/s12864-022-09014-5</a>.
+</div>
+<div id="ref-Ramskold2012SmartSeq" class="csl-entry" role="listitem">
+Ramsköld, Daniel, Shujun Luo, Yu-Chieh Wang, Robin Li, Qiaolin Deng,
+Omid R. Faridani, Gregory A. Daniels, et al. 2012. <span>“Full-Length
+<span class="nocase">mRNA-Seq</span> from Single-Cell Levels of
+<span>RNA</span> and Individual Circulating Tumor Cells.”</span>
+<em>Nature Biotechnology</em> 30 (8): 777–82. <a
+href="https://doi.org/10.1038/nbt.2282">https://doi.org/10.1038/nbt.2282</a>.
+</div>
+<div id="ref-Stahl2016SpatialTranscriptomics" class="csl-entry"
+role="listitem">
+Ståhl, Patrik L. et al. 2016. <span>“Visualization and Analysis of Gene
+Expression in Tissue Sections by Spatial Transcriptomics.”</span>
+<em>Science</em> 353 (6294): 78–82. <a
+href="https://doi.org/10.1126/science.aaf2403">https://doi.org/10.1126/science.aaf2403</a>.
+</div>
+<div id="ref-Wang2023SpatialTechnologies" class="csl-entry"
+role="listitem">
+Wang, Ye, Bin Liu, Gexin Zhao, YooJin Lee, Anton Buzdin, Xiaofeng Mu,
+Joseph Zhao, Hong Chen, and Xinmin Li. 2023. <span>“Spatial
+Transcriptomics: Technologies, Applications and Experimental
+Considerations.”</span> <em>Genomics</em> 115 (5): 110671. <a
+href="https://doi.org/10.1016/j.ygeno.2023.110671">https://doi.org/10.1016/j.ygeno.2023.110671</a>.
+</div>
+<div id="ref-Zheng2017Chromium" class="csl-entry" role="listitem">
+Zheng, Grace X. Y. et al. 2017. <span>“Massively Parallel Digital
+Transcriptional Profiling of Single Cells.”</span> <em>Nature
+Communications</em> 8: 14049. <a
+href="https://doi.org/10.1038/ncomms14049">https://doi.org/10.1038/ncomms14049</a>.
+</div>
+</div>
+      </div>
+
+      <section class="empty-state" id="empty-state" hidden>
+        <strong>Nenhuma leitura encontrada.</strong>
+        <span>Tente outro termo ou remova o filtro selecionado.</span>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>Material complementar do curso <strong>Análise de Dados de Transcriptômica Espacial</strong>.</p>
+    <a href="https://github.com/flaviogckessler/Curso_ST">GitHub</a>
+  </footer>
+
+  <script>
+    (() => {
+      const normalize = (value) => value.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const source = document.querySelector('.source-content');
+      const introHeading = source.querySelector(':scope > h1');
+      if (introHeading) introHeading.remove();
+
+      const resourceSections = [...source.querySelectorAll('h3')].map((heading) => {
+        const list = heading.nextElementSibling;
+        const id = heading.id;
+        if (!list || list.tagName !== 'UL') return null;
+        list.classList.add('resource-grid');
+        const items = [...list.querySelectorAll(':scope > li')];
+        items.forEach((item, index) => {
+          item.classList.add('resource-card');
+          item.dataset.category = id;
+          const link = item.querySelector('a');
+          if (link) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+            link.setAttribute('aria-label', link.textContent.trim() + ' (abre em nova aba)');
+          }
+          const slideText = item.textContent.match(/\(slides?[^)]*\)/i);
+          if (slideText) {
+            const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+              if (node.nodeValue.includes(slideText[0])) {
+                const parts = node.nodeValue.split(slideText[0]);
+                const fragment = document.createDocumentFragment();
+                fragment.append(parts[0]);
+                const badge = document.createElement('span');
+                badge.className = 'slide-badge';
+                badge.textContent = slideText[0].slice(1, -1);
+                fragment.append(badge, parts.slice(1).join(slideText[0]));
+                node.replaceWith(fragment);
+                break;
+              }
+            }
+          }
+          item.style.setProperty('--i', index);
+        });
+        return { heading, list, id, items };
+      }).filter(Boolean);
+
+      const cards = resourceSections.flatMap((section) => section.items);
+      document.getElementById('total-resources').textContent = cards.length;
+      const search = document.getElementById('search');
+      const filters = [...document.querySelectorAll('.filter')];
+      const count = document.getElementById('result-count');
+      const empty = document.getElementById('empty-state');
+      let activeFilter = 'all';
+
+      function update() {
+        const query = normalize(search.value.trim());
+        let visible = 0;
+        cards.forEach((card) => {
+          const matchesFilter = activeFilter === 'all' || card.dataset.category === activeFilter;
+          const matchesSearch = !query || normalize(card.textContent).includes(query);
+          card.hidden = !(matchesFilter && matchesSearch);
+          if (!card.hidden) visible += 1;
+        });
+        resourceSections.forEach(({ heading, list, items }) => {
+          const show = items.some((item) => !item.hidden);
+          heading.hidden = !show;
+          list.hidden = !show;
+        });
+        count.textContent = visible + ' ' + (visible === 1 ? 'recurso exibido' : 'recursos exibidos');
+        empty.hidden = visible !== 0;
+      }
+
+      filters.forEach((button) => button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        filters.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle('active', active);
+          item.setAttribute('aria-pressed', active);
+        });
+        update();
+      }));
+      search.addEventListener('input', update);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === '/' && document.activeElement !== search && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+          event.preventDefault();
+          search.focus();
+        }
+        if (event.key === 'Escape' && document.activeElement === search) {
+          search.value = '';
+          search.blur();
+          update();
+        }
+      });
+      update();
+    })();
+  </script>
+</body>
+</html>

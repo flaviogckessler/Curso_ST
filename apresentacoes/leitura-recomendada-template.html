@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Leituras recomendadas do curso Análise de Dados de Transcriptômica Espacial, organizadas por formato e vinculadas aos slides da Aula 1.">
+  <meta name="theme-color" content="#0b1f33">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="$title$">
+  <meta property="og:description" content="Artigos, livros, tutoriais, vídeos e recursos citados no curso, com acesso direto às fontes.">
+  <meta property="og:url" content="https://flaviogckessler.github.io/Curso_ST/apresentacoes/LEITURA_RECOMENDADA.html">
+  <link rel="canonical" href="https://flaviogckessler.github.io/Curso_ST/apresentacoes/LEITURA_RECOMENDADA.html">
+  $for(css)$
+  <link rel="stylesheet" href="$css$">
+  $endfor$
+  <title>$title$ · Curso de Transcriptômica Espacial</title>
+  <style>
+$styles.html()$
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para as leituras</a>
+  <header class="site-header">
+    <a class="brand" href="https://flaviogckessler.github.io/Curso_ST/" aria-label="Página inicial do curso">
+      <span class="brand-mark" aria-hidden="true">ST</span>
+      <span><strong>Curso_ST</strong><small>Transcriptômica espacial</small></span>
+    </a>
+    <a class="repo-link" href="https://github.com/flaviogckessler/Curso_ST">Ver repositório <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <section class="hero" aria-labelledby="page-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Roteiro de estudo · Aula 1</p>
+      <h1 id="page-title">Leituras<br><em>recomendadas</em></h1>
+      <p class="hero-intro">Artigos fundamentais, revisões, tutoriais e recursos para aprofundar os conceitos apresentados no curso.</p>
+      <dl class="hero-stats" aria-label="Resumo da coleção">
+        <div><dt id="total-resources">26</dt><dd>recursos</dd></div>
+        <div><dt>5</dt><dd>formatos</dd></div>
+        <div><dt>1</dt><dd>aula mapeada</dd></div>
+      </dl>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <span class="orb orb-a"></span><span class="orb orb-b"></span><span class="orb orb-c"></span>
+      <span class="line line-a"></span><span class="line line-b"></span>
+      <span class="coordinate">RNA · espaço · contexto</span>
+    </div>
+  </section>
+
+  <div class="page-shell">
+    <aside class="sidebar" aria-label="Navegação e filtros">
+      <div class="sidebar-inner">
+        <p class="sidebar-label">Nesta página</p>
+        $toc$
+        <a class="source-link" href="LEITURA_RECOMENDADA.md">Consultar fonte em Markdown <span aria-hidden="true">→</span></a>
+      </div>
+    </aside>
+
+    <main id="conteudo" class="reading-content">
+      <section class="toolbar" aria-label="Filtrar leituras">
+        <label class="search-wrap" for="search">
+          <span aria-hidden="true">⌕</span>
+          <span class="sr-only">Buscar nas leituras</span>
+          <input id="search" type="search" placeholder="Buscar por título, tema ou descrição…" autocomplete="off">
+          <kbd aria-hidden="true">/</kbd>
+        </label>
+        <div class="filters" role="group" aria-label="Filtrar por formato">
+          <button class="filter active" type="button" data-filter="all" aria-pressed="true">Todos</button>
+          <button class="filter" type="button" data-filter="artigos-cientificos" aria-pressed="false">Artigos</button>
+          <button class="filter" type="button" data-filter="livro-e-capitulo-on-line" aria-pressed="false">Livro</button>
+          <button class="filter" type="button" data-filter="tutoriais-e-documentacao" aria-pressed="false">Tutoriais</button>
+          <button class="filter" type="button" data-filter="videos" aria-pressed="false">Vídeos</button>
+          <button class="filter" type="button" data-filter="sites-e-repositorios" aria-pressed="false">Sites</button>
+        </div>
+        <p class="result-count" id="result-count" role="status" aria-live="polite"></p>
+      </section>
+
+      <div class="source-content">
+$body$
+      </div>
+
+      <section class="empty-state" id="empty-state" hidden>
+        <strong>Nenhuma leitura encontrada.</strong>
+        <span>Tente outro termo ou remova o filtro selecionado.</span>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>Material complementar do curso <strong>Análise de Dados de Transcriptômica Espacial</strong>.</p>
+    <a href="https://github.com/flaviogckessler/Curso_ST">GitHub</a>
+  </footer>
+
+  <script>
+    (() => {
+      const normalize = (value) => value.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const source = document.querySelector('.source-content');
+      const introHeading = source.querySelector(':scope > h1');
+      if (introHeading) introHeading.remove();
+
+      const resourceSections = [...source.querySelectorAll('h3')].map((heading) => {
+        const list = heading.nextElementSibling;
+        const id = heading.id;
+        if (!list || list.tagName !== 'UL') return null;
+        list.classList.add('resource-grid');
+        const items = [...list.querySelectorAll(':scope > li')];
+        items.forEach((item, index) => {
+          item.classList.add('resource-card');
+          item.dataset.category = id;
+          const link = item.querySelector('a');
+          if (link) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+            link.setAttribute('aria-label', link.textContent.trim() + ' (abre em nova aba)');
+          }
+          const slideText = item.textContent.match(/\(slides?[^)]*\)/i);
+          if (slideText) {
+            const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+              if (node.nodeValue.includes(slideText[0])) {
+                const parts = node.nodeValue.split(slideText[0]);
+                const fragment = document.createDocumentFragment();
+                fragment.append(parts[0]);
+                const badge = document.createElement('span');
+                badge.className = 'slide-badge';
+                badge.textContent = slideText[0].slice(1, -1);
+                fragment.append(badge, parts.slice(1).join(slideText[0]));
+                node.replaceWith(fragment);
+                break;
+              }
+            }
+          }
+          item.style.setProperty('--i', index);
+        });
+        return { heading, list, id, items };
+      }).filter(Boolean);
+
+      const cards = resourceSections.flatMap((section) => section.items);
+      document.getElementById('total-resources').textContent = cards.length;
+      const search = document.getElementById('search');
+      const filters = [...document.querySelectorAll('.filter')];
+      const count = document.getElementById('result-count');
+      const empty = document.getElementById('empty-state');
+      let activeFilter = 'all';
+
+      function update() {
+        const query = normalize(search.value.trim());
+        let visible = 0;
+        cards.forEach((card) => {
+          const matchesFilter = activeFilter === 'all' || card.dataset.category === activeFilter;
+          const matchesSearch = !query || normalize(card.textContent).includes(query);
+          card.hidden = !(matchesFilter && matchesSearch);
+          if (!card.hidden) visible += 1;
+        });
+        resourceSections.forEach(({ heading, list, items }) => {
+          const show = items.some((item) => !item.hidden);
+          heading.hidden = !show;
+          list.hidden = !show;
+        });
+        count.textContent = visible + ' ' + (visible === 1 ? 'recurso exibido' : 'recursos exibidos');
+        empty.hidden = visible !== 0;
+      }
+
+      filters.forEach((button) => button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        filters.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle('active', active);
+          item.setAttribute('aria-pressed', active);
+        });
+        update();
+      }));
+      search.addEventListener('input', update);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === '/' && document.activeElement !== search && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+          event.preventDefault();
+          search.focus();
+        }
+        if (event.key === 'Escape' && document.activeElement === search) {
+          search.value = '';
+          search.blur();
+          update();
+        }
+      });
+      update();
+    })();
+  </script>
+</body>
+</html>

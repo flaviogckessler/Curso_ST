@@ -59,6 +59,13 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 -   [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html)
 - [Comunicação Celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html)
 
+## Leituras recomendadas
+
+Os artigos científicos, capítulos, tutoriais, vídeos e repositórios citados nas apresentações estão reunidos em uma página pesquisável, organizada por tipo de material e vinculada aos slides correspondentes da Aula 1.
+
+-   [Explorar as leituras recomendadas no GitHub Pages](https://flaviogckessler.github.io/Curso_ST/apresentacoes/LEITURA_RECOMENDADA.html)
+-   [Consultar a lista em Markdown](apresentacoes/LEITURA_RECOMENDADA.md)
+
 ## Ministrante
 
 **Flávio Gabriel Carazza-Kessler**

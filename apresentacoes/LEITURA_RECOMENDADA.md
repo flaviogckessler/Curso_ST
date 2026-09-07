@@ -8,11 +8,11 @@ link-citations: true
 
 Este arquivo reúne os materiais citados nas apresentações do curso. As referências bibliográficas de artigos e livros estão cadastradas em [`bibliography.bib`](../bibliography.bib). Os números de slide indicam onde cada material aparece na apresentação original.
 
-## Aula 1 — Introdução à transcriptômica espacial
+## Aula 1 — Introdução à transcriptômica espacial {#aula-1}
 
 Apresentação: [`Aula 1 - Introdução à transcriptômica espacial.pptx`](<Aula 1 - Introdução à transcriptômica espacial.pptx>)
 
-### Artigos científicos
+### Artigos científicos {#artigos-cientificos}
 
 - [**Full-length mRNA-Seq from single-cell levels of RNA and individual circulating tumor cells**](https://doi.org/10.1038/nbt.2282) — trabalho que apresenta o Smart-seq para obtenção de transcriptomas completos a partir de células individuais. [@Ramskold2012SmartSeq] *(slide 18)*
 - [**Massively parallel digital transcriptional profiling of single cells**](https://doi.org/10.1038/ncomms14049) — descrição da plataforma Chromium para perfil transcricional de células individuais em grande escala. [@Zheng2017Chromium] *(slide 19)*
@@ -29,11 +29,11 @@ Apresentação: [`Aula 1 - Introdução à transcriptômica espacial.pptx`](<Aul
 - [**Current best practices in single-cell RNA-seq analysis: a tutorial**](https://doi.org/10.15252/msb.20188746) — tutorial de boas práticas para pré-processamento e análises posteriores de scRNA-seq. [@Luecken2019BestPractices] *(slide 42)*
 - [**A comprehensive workflow for optimizing RNA-seq data analysis**](https://doi.org/10.1186/s12864-024-10414-y) — fluxo de trabalho para seleção e otimização das etapas de análise de RNA-seq. [@Jiang2024RNASeqWorkflow] *(slide 42)*
 
-### Livro e capítulo on-line
+### Livro e capítulo on-line {#livro-e-capitulo-on-line}
 
 - [**Orchestrating Spatial Transcriptomics Analysis with Bioconductor — Reads to counts**](https://bioconductor.org/books/3.22/OSTA/pages/seq-reads-to-counts.html) — capítulo sobre a transformação das leituras de sequenciamento em matrizes de contagem, incluindo barcodes espaciais, alinhamento, controle de qualidade e contagem. [@Crowell2025OSTA] *(slide 44)*
 
-### Tutoriais e documentação
+### Tutoriais e documentação {#tutoriais-e-documentacao}
 
 - [**Tutorial do RStudio para iniciantes: um guia completo**](https://www.datacamp.com/pt/tutorial/r-studio-tutorial) — versão em português do tutorial introdutório do DataCamp. *(slide 9, hiperlink embutido)*
 - [**Space Ranger Algorithms: Read Processing & Secondary Analysis**](https://www.10xgenomics.com/support/software/space-ranger/latest/algorithms-overview/gene-expression) — documentação oficial sobre processamento de leituras, alinhamento, barcodes, UMIs e análises secundárias do Space Ranger. *(slide 42, hiperlink embutido)*
@@ -42,18 +42,18 @@ Apresentação: [`Aula 1 - Introdução à transcriptômica espacial.pptx`](<Aul
 - [**Introduction to renv**](https://rstudio.github.io/renv/articles/renv.html) — documentação sobre criação de ambientes reproduzíveis e isolamento das dependências de projetos em R. *(slide 67)*
 - [**RStudio Tutorial for Beginners: A Complete Guide**](https://www.datacamp.com/tutorial/r-studio-tutorial) — versão em inglês do tutorial introdutório do DataCamp. *(slide 67)*
 
-### Vídeos
+### Vídeos {#videos}
 
 - [**Single Cell Gene Expression Protocol v3.1: Assemble Chromium Next GEM Chip G**](https://www.youtube.com/watch?v=cH8ldAqKUzE) — demonstração da montagem do chip para o protocolo Chromium Single Cell Gene Expression. *(slide 27)*
 - [**Visium Spatial Gene Expression Protocol**](https://www.youtube.com/playlist?list=PLfaSRwcfHcq1acX1nuTFcUGClpNRPEyHH) — série de vídeos sobre o protocolo Visium Spatial Gene Expression. *(slide 39)*
 
-### Sites e repositórios
+### Sites e repositórios {#sites-e-repositorios}
 
 - [**Perfil de Flávio Carazza-Kessler no GitHub**](https://github.com/flaviogckessler) *(slide 6, hiperlink embutido)*
 - [**Perfil do SysBioLab no GitHub**](https://github.com/sysbiolab) *(slide 6, hiperlink embutido)*
 - [**Repositório do curso no GitHub**](https://github.com/flaviogckessler/Curso_ST) — apresentações, vinhetas e materiais das atividades práticas. *(slide 62, hiperlink embutido)*
 
-## Referências
+## Referências {#referencias}
 
 ::: {#refs}
 :::
