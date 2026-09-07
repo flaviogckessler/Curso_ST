@@ -2,6 +2,8 @@
 title: "Visualização de dados de transcriptômica espacial com PathwaySpace"
 author:
   - name: Flávio Gabriel Carazza-Kessler
+  - name: Sysbiolab Team
+  - name: Mauro A. A. Castro
 date: "2026-05-18"
 bibliography: ../bibliography.bib
 link-citations: true
@@ -42,9 +44,9 @@ knitr::opts_chunk$set(
 
 # Visão geral
 
-Nesta vinheta, visualizaremos a expressão do gene `Camk2n1` na região anterior de uma seção de cérebro de camundongo. Primeiro, o sinal será observado diretamente nos spots com o Seurat. Em seguida, as coordenadas dos spots e a imagem histológica serão organizadas em um `GraphSpace`, a partir do qual o PathwaySpace produzirá uma representação contínua da expressão no tecido [@Tercan2025PathwaySpace].
+Nesta vinheta, visualizaremos a expressão do gene `Camk2n1` na região anterior de uma seção de cérebro de camundongo. Primeiro, o sinal será observado diretamente nos spots com o `Seurat`. Em seguida, as coordenadas dos spots e a imagem histológica serão organizadas em um `GraphSpace`, a partir do qual o PathwaySpace produzirá uma representação contínua da expressão no tecido [@Tercan2025PathwaySpace].
 
-O objeto de entrada é `data/brain.RDS`, produzido na etapa anterior do curso. O fluxo segue a ordem do script `DOC5_SpatialTranscriptomics_Visualization.R`: inspeção do objeto, seleção da região anterior, escolha do gene, construção do espaço gráfico, projeção do sinal e comparação das visualizações.
+O objeto de entrada é `data/brain.RDS`, produzido na etapa anterior do curso. O fluxo segue a ordem: inspeção do objeto, seleção da região anterior, escolha do gene, construção do espaço gráfico, projeção do sinal e comparação das visualizações.
 
 A versão HTML, quando for produzida, apresentará o roteiro sem executar a análise. Durante o curso, abra este arquivo `.Rmd` no RStudio e execute os blocos na ordem em que aparecem.
 
@@ -52,7 +54,7 @@ A versão HTML, quando for produzida, apresentará o roteiro sem executar a aná
 
 ## Definir as pastas
 
-Antes de executar o código, defina o diretório de trabalho como a pasta `vinhetas/`. No RStudio, use **Session \> Set Working Directory \> To Source File Location**. O objeto será carregado de `data/` e a figura final será gravada em formato PNG na pasta `imagens/`.
+Antes de executar o código, defina o diretório de trabalho como a pasta `vinhetas/`. No RStudio, use **Session \> Set Working Directory \> To Source File Location**. Será utilizado o objeto pré-processado da vinheta anterior, ele será carregado da pasta `data/` e a figura final será gravada em formato PNG na pasta `imagens/`.
 
 ```{r definir-diretorios}
 diretorio_vinhetas <- getwd()
