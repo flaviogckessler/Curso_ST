@@ -1,0 +1,328 @@
+---
+title: "Instalação e preparação dos dados Xenium com RGraphSpace"
+author:
+  - name: Sysbiolab Team
+  - name: Flávio Gabriel Carazza-Kessler
+date: "2026-09-08"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+params:
+  run_preparation: false
+---
+
+```{r configuracao, include=FALSE, purl=FALSE}
+executar_preparacao <- if (exists("params", inherits = FALSE)) {
+  isTRUE(params$run_preparation)
+} else {
+  # Ao executar os blocos manualmente, o objeto params não é criado.
+  # Nesse caso, a preparação fica habilitada por padrão.
+  TRUE
+}
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = executar_preparacao,
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 8,
+  fig.height = 6,
+  dev = "png",
+  dpi = 120,
+  message = TRUE,
+  warning = FALSE
+)
+```
+
+# Visão geral
+
+Esta vinheta avançada prepara o conjunto de dados que será utilizado na análise de segmentação espacial do curso. O fluxo baixa os dados Xenium públicos da 10x Genomics, carrega as contagens e as segmentações celulares no Seurat, converte o objeto para `GraphSpace`, associa as geometrias das células, normaliza a orientação espacial, seleciona uma região menor e grava o resultado em `data/Xenium_GS_Crop.RDS`.
+
+O roteiro segue a vinheta de referência do Sysbiolab Team, [Spatial segmentation with RGraphSpace](https://sysbiolab.github.io/RGraphSpace/articles/spatial-segmentation1.html), com adaptações apenas no início e no final para organizar os arquivos do repositório e salvar o objeto preparado para o curso.
+
+Esta não é uma atividade regular das aulas. Ela é destinada a alunos mais experientes ou a quem precise reconstruir o arquivo leve a partir dos dados brutos. A vinheta expositiva subsequente deverá apenas baixar `Xenium_GS_Crop.RDS` e conduzir a análise.
+
+# Antes de começar
+
+## Requisitos
+
+- R 4.5.0 ou mais recente e, preferencialmente, RStudio;
+- os pacotes `RGraphSpace`, `Seurat`, `SeuratObject`, `sf` e `patchwork`, instalados conforme `Configuracao_do_ambiente_RStudio.Rmd`;
+- conexão estável com a internet; e
+- pelo menos 7 GB livres em disco para manter o arquivo ZIP e sua extração ao mesmo tempo.
+
+O arquivo compactado possui mais de 3 GB. O tempo total depende da conexão, da velocidade do disco e da memória disponível. Não interrompa o R durante a importação com `LoadXenium()`.
+
+## Arquivos de entrada e saída
+
+Ao final, a estrutura relevante será:
+
+``` text
+Curso_ST/
+|-- data/
+|   |-- Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP_outs.zip
+|   |-- xenium_tiny_subset/
+|   `-- Xenium_GS_Crop.RDS
+`-- vinhetas/
+    |-- Instalacao_dados_Xenium_RGraphSpace.Rmd
+    `-- Instalacao_dados_Xenium_RGraphSpace.html
+```
+
+O ZIP e a pasta extraída são dados brutos locais e estão excluídos do versionamento. Somente o objeto preparado `Xenium_GS_Crop.RDS` deve ser incorporado ao repositório.
+
+## Executar a preparação
+
+A versão HTML desta vinheta apresenta o roteiro sem executar o download e a preparação. Para produzir efetivamente o conjunto de dados, abra o arquivo `.Rmd` no RStudio e execute todos os blocos na ordem em que aparecem. Como alternativa, a partir da raiz do repositório, renderize a vinheta com o parâmetro habilitado:
+
+```{r renderizar-com-preparacao, eval=FALSE}
+rmarkdown::render(
+  "vinhetas/Instalacao_dados_Xenium_RGraphSpace.Rmd",
+  params = list(run_preparation = TRUE)
+)
+```
+
+O download é retomado de forma conservadora: se a extração já contiver `cell_feature_matrix.h5`, ela será reutilizada; se apenas o ZIP estiver disponível, o download será ignorado e a extração será refeita.
+
+# Carregar os pacotes
+
+Os pacotes são carregados na mesma ordem do script de preparação.
+
+```{r carregar-pacotes, message=FALSE}
+library("RGraphSpace")
+library("Seurat")
+library("SeuratObject")
+library("sf")
+library("patchwork")
+```
+
+# Baixar e extrair os dados Xenium
+
+A função abaixo procura primeiro uma extração existente. Quando necessário, baixa o arquivo para uma extensão temporária `.part`, renomeia-o somente após o término e então extrai seu conteúdo.
+
+```{r definir-download}
+prepare_xenium_data <- function(
+    dest_dir = file.path("data", "xenium_tiny_subset")
+) {
+  url <- paste0(
+    "https://cf.10xgenomics.com/samples/xenium/1.0.2/",
+    "Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP/",
+    "Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP_outs.zip"
+  )
+
+  dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
+
+  # Localizar uma extração existente, inclusive dentro de uma pasta
+  # adicional contida no arquivo ZIP.
+  locate_dataset <- function() {
+    matrix_file <- list.files(
+      dest_dir,
+      pattern = "^cell_feature_matrix\\.h5$",
+      recursive = TRUE,
+      full.names = TRUE
+    )
+
+    if (length(matrix_file) > 0L) {
+      dirname(matrix_file[[1L]])
+    } else {
+      NA_character_
+    }
+  }
+
+  data_path <- locate_dataset()
+
+  if (!is.na(data_path)) {
+    message("O conjunto Xenium já está disponível; download ignorado.")
+    return(normalizePath(data_path, winslash = "/", mustWork = TRUE))
+  }
+
+  zip_file <- file.path(dirname(dest_dir), basename(url))
+
+  if (!file.exists(zip_file)) {
+    old_timeout <- getOption("timeout")
+    on.exit(options(timeout = old_timeout), add = TRUE)
+    options(timeout = max(3600, old_timeout))
+
+    partial_file <- paste0(zip_file, ".part")
+
+    status <- utils::download.file(
+      url,
+      destfile = partial_file,
+      mode = "wb",
+      quiet = FALSE
+    )
+
+    if (status != 0L) {
+      stop("Não foi possível baixar o conjunto de dados Xenium.")
+    }
+
+    if (!file.rename(partial_file, zip_file)) {
+      stop("Não foi possível mover o arquivo baixado para o destino final.")
+    }
+  } else {
+    message("O arquivo ZIP já está disponível; download ignorado.")
+  }
+
+  utils::unzip(zip_file, exdir = dest_dir)
+
+  data_path <- locate_dataset()
+
+  if (is.na(data_path)) {
+    stop(
+      "A extração terminou, mas os arquivos Xenium esperados não foram encontrados."
+    )
+  }
+
+  normalizePath(data_path, winslash = "/", mustWork = TRUE)
+}
+```
+
+## Definir os diretórios e obter os dados
+
+Antes de executar este bloco manualmente, defina o diretório de trabalho como a pasta `vinhetas/` pelo menu **Session \> Set Working Directory \> To Source File Location** do RStudio. Os dados serão armazenados na pasta `data/` da raiz do repositório.
+
+```{r obter-dados-xenium}
+getwd()
+
+diretorio_vinhetas <- getwd()
+diretorio_curso <- dirname(diretorio_vinhetas)
+diretorio_dados <- file.path(diretorio_curso, "data")
+
+dir.create(diretorio_dados, recursive = TRUE, showWarnings = FALSE)
+
+xenium_path <- prepare_xenium_data(
+  dest_dir = file.path(diretorio_dados, "xenium_tiny_subset")
+)
+
+xenium_path
+```
+
+# Carregar o Xenium e criar o `GraphSpace`
+
+O conjunto é carregado com as segmentações celulares. Em seguida, as contagens brutas da camada `counts` são transferidas para um objeto `GraphSpace`.
+
+```{r carregar-e-converter-xenium}
+xenium.obj <- LoadXenium(
+  xenium_path,
+  fov = "fov",
+  segmentations = "cell"
+)
+
+gs <- as.GraphSpace(
+  xenium.obj,
+  space = "spatial",
+  layer = "counts"
+)
+```
+
+# Associar as geometrias das células
+
+Primeiro, conferimos as imagens disponíveis. Os polígonos da segmentação são então convertidos para geometrias `sf`, validados e associados aos vértices do `GraphSpace`.
+
+```{r associar-geometrias}
+Images(xenium.obj)
+
+cellseg <- xenium.obj[["fov"]]
+cellseg <- cellseg$segmentations@polygons
+cellseg <- SpatialPolygons(cellseg)
+cellseg <- sf::st_as_sfc(cellseg)
+cellseg <- sf::st_make_valid(cellseg)
+
+gs_geometry(gs) <- cellseg
+```
+
+# Normalizar e orientar o espaço
+
+O grafo e as geometrias são normalizados para o mesmo sistema de coordenadas. A rotação e a inversão reproduzem a orientação adotada na vinheta de referência.
+
+```{r normalizar-orientar}
+gs <- normalizeGraphSpace(gs, mar = 0)
+gs <- normalizeGeometry(gs)
+
+gs <- rotateGraphSpace(gs)
+gs <- flipGraphSpace(gs)
+```
+
+# Delimitar a região de interesse
+
+A expressão de `Slc17a7` é usada para visualizar o conjunto completo. O retângulo branco delimita exatamente a região que será mantida no objeto leve.
+
+```{r visualizar-regiao-interesse, fig.width=8, fig.height=6}
+cpal <- hcl.colors(100, palette = "Geyser", rev = FALSE)
+data_range <- range(log2(gs[["fdata"]] + 1))
+
+p <- ggplot(gs) +
+  geom_nodespace(
+    mapping = aes(colour = log2(Slc17a7 + 1)),
+    size = 0.4,
+    pch = 16
+  ) +
+  scale_colour_continuous(palette = cpal, limits = data_range) +
+  theme_gspace_coords(
+    theme = "th3",
+    is_norm = TRUE,
+    xlab = "Tissue coordinates 1",
+    ylab = "Tissue coordinates 2"
+  ) +
+  annotate(
+    "rect",
+    xmin = 0.55,
+    xmax = 0.75,
+    ymin = 0.45,
+    ymax = 0.65,
+    fill = NA,
+    colour = "white",
+    lty = "21",
+    lwd = 1
+  )
+
+p
+```
+
+# Recortar e salvar o objeto leve
+
+O recorte conserva apenas a região delimitada. Como suas coordenadas mudam, o grafo e as geometrias são normalizados novamente e recebem a mesma orientação do gráfico principal.
+
+```{r recortar-regiao}
+gs_crop <- cropGraphSpace(
+  gs,
+  xmin = 0.55,
+  xmax = 0.75,
+  ymin = 0.45,
+  ymax = 0.65
+)
+
+gs_crop <- normalizeGraphSpace(gs_crop, mar = 0)
+gs_crop <- normalizeGeometry(gs_crop)
+
+gs_crop <- rotateGraphSpace(gs_crop)
+gs_crop <- flipGraphSpace(gs_crop)
+```
+
+O resultado é salvo diretamente em `data/`, pronto para ser distribuído e carregado pela próxima vinheta.
+
+```{r salvar-objeto-preparado}
+arquivo_saida <- file.path(diretorio_dados, "Xenium_GS_Crop.RDS")
+
+saveRDS(gs_crop, file = arquivo_saida)
+
+file.info(arquivo_saida)[, c("size", "mtime")]
+```
+
+# Arquivo produzido
+
+Ao concluir o roteiro, confirme a existência de:
+
+- `data/Xenium_GS_Crop.RDS`: objeto `GraphSpace` recortado e preparado para a vinheta expositiva.
+
+O ZIP e a pasta extraída podem ser preservados para repetir a preparação sem novo download. Caso o espaço em disco seja necessário, remova-os manualmente somente depois de confirmar que `Xenium_GS_Crop.RDS` pode ser lido com `readRDS()`.
+
+# Informações da sessão
+
+```{r informacoes-sessao}
+sessionInfo()
+```
