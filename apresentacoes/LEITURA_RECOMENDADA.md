@@ -10,9 +10,9 @@ Este arquivo reúne os materiais citados nas apresentações do curso. As refer�
 
 ## Aula 1 — Introdução à transcriptômica espacial {#aula-1}
 
-Apresentação: [`Aula 1 - Introdução à transcriptômica espacial.pptx`](<Aula 1 - Introdução à transcriptômica espacial.pptx>)
+Apresentação: [`Aula1_Introducao_transcriptomica_espacial.pptx`](Aula1_Introducao_transcriptomica_espacial.pptx)
 
-### Artigos científicos {#artigos-cientificos}
+### Artigos científicos {#artigos-cientificos-aula-1}
 
 - [**Full-length mRNA-Seq from single-cell levels of RNA and individual circulating tumor cells**](https://doi.org/10.1038/nbt.2282) — trabalho que apresenta o Smart-seq para obtenção de transcriptomas completos a partir de células individuais. [@Ramskold2012SmartSeq] *(slide 18)*
 - [**Massively parallel digital transcriptional profiling of single cells**](https://doi.org/10.1038/ncomms14049) — descrição da plataforma Chromium para perfil transcricional de células individuais em grande escala. [@Zheng2017Chromium] *(slide 19)*
@@ -29,29 +29,59 @@ Apresentação: [`Aula 1 - Introdução à transcriptômica espacial.pptx`](<Aul
 - [**Current best practices in single-cell RNA-seq analysis: a tutorial**](https://doi.org/10.15252/msb.20188746) — tutorial de boas práticas para pré-processamento e análises posteriores de scRNA-seq. [@Luecken2019BestPractices] *(slide 42)*
 - [**A comprehensive workflow for optimizing RNA-seq data analysis**](https://doi.org/10.1186/s12864-024-10414-y) — fluxo de trabalho para seleção e otimização das etapas de análise de RNA-seq. [@Jiang2024RNASeqWorkflow] *(slide 42)*
 
-### Livro e capítulo on-line {#livro-e-capitulo-on-line}
+### Livro e capítulo on-line {#livro-e-capitulo-on-line-aula-1}
 
 - [**Orchestrating Spatial Transcriptomics Analysis with Bioconductor — Reads to counts**](https://bioconductor.org/books/3.22/OSTA/pages/seq-reads-to-counts.html) — capítulo sobre a transformação das leituras de sequenciamento em matrizes de contagem, incluindo barcodes espaciais, alinhamento, controle de qualidade e contagem. [@Crowell2025OSTA] *(slide 44)*
 
-### Tutoriais e documentação {#tutoriais-e-documentacao}
+### Tutoriais e documentação {#tutoriais-e-documentacao-aula-1}
 
 - [**Tutorial do RStudio para iniciantes: um guia completo**](https://www.datacamp.com/pt/tutorial/r-studio-tutorial) — versão em português do tutorial introdutório do DataCamp. *(slide 9, hiperlink embutido)*
 - [**Space Ranger Algorithms: Read Processing & Secondary Analysis**](https://www.10xgenomics.com/support/software/space-ranger/latest/algorithms-overview/gene-expression) — documentação oficial sobre processamento de leituras, alinhamento, barcodes, UMIs e análises secundárias do Space Ranger. *(slide 42, hiperlink embutido)*
-- [**Configuração do ambiente do RStudio**](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html) — vinheta do curso para preparar o ambiente das aulas práticas. *(slide 63, hiperlink embutido)*
+- [**Configuração do ambiente do RStudio**](https://flaviogckessler.github.io/Curso_ST/vinhetas/DOC1_Configuracao_do_ambiente_RStudio.html) — vinheta do curso para preparar o ambiente das aulas práticas. *(slide 63, hiperlink embutido)*
 - [**Tutorial: Getting Started with R and RStudio**](https://www.dataquest.io/blog/tutorial-getting-started-with-r-and-rstudio/) — introdução ao R e ao RStudio publicada pelo Dataquest. *(slide 67)*
 - [**Introduction to renv**](https://rstudio.github.io/renv/articles/renv.html) — documentação sobre criação de ambientes reproduzíveis e isolamento das dependências de projetos em R. *(slide 67)*
 - [**RStudio Tutorial for Beginners: A Complete Guide**](https://www.datacamp.com/tutorial/r-studio-tutorial) — versão em inglês do tutorial introdutório do DataCamp. *(slide 67)*
 
-### Vídeos {#videos}
+### Vídeos {#videos-aula-1}
 
 - [**Single Cell Gene Expression Protocol v3.1: Assemble Chromium Next GEM Chip G**](https://www.youtube.com/watch?v=cH8ldAqKUzE) — demonstração da montagem do chip para o protocolo Chromium Single Cell Gene Expression. *(slide 27)*
 - [**Visium Spatial Gene Expression Protocol**](https://www.youtube.com/playlist?list=PLfaSRwcfHcq1acX1nuTFcUGClpNRPEyHH) — série de vídeos sobre o protocolo Visium Spatial Gene Expression. *(slide 39)*
 
-### Sites e repositórios {#sites-e-repositorios}
+### Sites e repositórios {#sites-e-repositorios-aula-1}
 
 - [**Perfil de Flávio Carazza-Kessler no GitHub**](https://github.com/flaviogckessler) *(slide 6, hiperlink embutido)*
 - [**Perfil do SysBioLab no GitHub**](https://github.com/sysbiolab) *(slide 6, hiperlink embutido)*
 - [**Repositório do curso no GitHub**](https://github.com/flaviogckessler/Curso_ST) — apresentações, vinhetas e materiais das atividades práticas. *(slide 62, hiperlink embutido)*
+
+## Aula 2 — Pré-processamento e clusterização {#aula-2}
+
+Apresentação: [`Aula2_Aula_PreProcessamento_Clusterizacao.pptx`](Aula2_Aula_PreProcessamento_Clusterizacao.pptx)
+
+### Artigos científicos {#artigos-cientificos-aula-2}
+
+- [**Review of single-cell RNA-seq data clustering for cell-type identification and characterization**](https://doi.org/10.1261/rna.078965.121) — revisão dos principais métodos de clusterização usados para identificar e caracterizar tipos celulares em dados de scRNA-seq. [@Zhang2023Clustering] *(slide 40)*
+- [**SpatialExperiment: infrastructure for spatially-resolved transcriptomics data in R using Bioconductor**](https://doi.org/10.1093/bioinformatics/btac299) — apresenta a classe `SpatialExperiment` e sua infraestrutura para representar e manipular dados de transcriptômica espacial no Bioconductor. [@Righelli2022SpatialExperiment] *(slide 57)*
+- [**Museum of spatial transcriptomics**](https://doi.org/10.1038/s41592-022-01409-2) — panorama comparativo das tecnologias de transcriptômica espacial e de suas resoluções, escalas e aplicações. [@Moses2022Museum] *(slide 57)*
+
+### Livro e capítulo on-line {#livro-e-capitulo-on-line-aula-2}
+
+- [**Biologia molecular da célula**](https://app.minhabiblioteca.com.br/books/9788582714232) — livro-texto de referência para os fundamentos de biologia celular e molecular abordados na aula. [@Alberts2017Biologia] *(slide 17)*
+
+### Tutoriais e documentação {#tutoriais-e-documentacao-aula-2}
+
+- [**Seurat — documentação e vinhetas**](https://satijalab.org/seurat/) — documentação oficial do pacote para controle de qualidade, análise, clusterização e exploração de dados de expressão gênica em célula única e no espaço. *(slide 13)*
+- [**Seurat — Interaction Tips**](https://satijalab.org/seurat/archive/v4.3/interaction_vignette) — vinheta do Seurat 4.3 sobre identidades, metadados, seleção de células e inspeção de objetos. *(slide 14)*
+- [**Understanding Seurat objects — simply explained!**](https://biostatsquid.com/seurat-objects-explained/) — explicação visual da estrutura interna de objetos Seurat e de seus principais componentes. *(slides 14 e 33)*
+- [**Z-transformation**](http://www.statistics4u.info/fundstat_eng/ee_ztransform.html) — introdução à transformação em escore-z e à padronização de variáveis. *(slide 32)*
+- [**What is Dimensionality Reduction? A Guide**](https://blog.roboflow.com/what-is-dimensionality-reduction/) — introdução conceitual à redução de dimensionalidade e às suas aplicações. *(slide 37)*
+- [**RGraphSpace — Get started**](https://sysbiolab.github.io/RGraphSpace/articles/get-started.html) — guia inicial para representar redes e seus atributos gráficos com o pacote RGraphSpace. *(slide 94, hiperlink embutido)*
+- [**PathwaySpace — Get started**](https://sysbiolab.github.io/PathwaySpace/articles/get-started.html) — guia inicial do pacote para projeção e visualização de sinais de redes em espaços bidimensionais. *(slides 107 a 109, hiperlink embutido)*
+- [**Controle de qualidade, pré-processamento e clusterização espacial**](https://flaviogckessler.github.io/Curso_ST/vinhetas/Controle_de_qualidade_preprocessamento_clusterizacao_espacial.html) — vinheta prática da Aula 2 para preparar, avaliar e clusterizar dados de transcriptômica espacial. *(slide 5)*
+- [**Visualização contínua com PathwaySpace**](https://flaviogckessler.github.io/Curso_ST/vinhetas/Visualizacao_Continua_PathwaySpace.html) — vinheta prática da Aula 2 para projetar e explorar sinais contínuos com PathwaySpace. *(slide 86)*
+
+### Sites e repositórios {#sites-e-repositorios-aula-2}
+
+- [**PathwaySpace**](https://sysbiolab.github.io/PathwaySpace/) — site oficial do pacote, com instalação, referência de funções e vinhetas. *(slides 84 e 85)*
 
 ## Referências {#referencias}
 
