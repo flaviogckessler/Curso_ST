@@ -327,11 +327,11 @@ ggsave(filename = file.path(diretorio_imagens,"Brain_anterior_Camk2n1.png"),
 
 Ao concluir a vinheta, as imagens salvas estarão disponíveis em:
 
-- `imagens/Brain_ant_RGraphSpace_Camk2n1.png`
+-   `imagens/Brain_ant_RGraphSpace_Camk2n1.png`
 
-- `imagens/Brain_ant_PathwaySpace_Camk2n1.png`
+-   `imagens/Brain_ant_PathwaySpace_Camk2n1.png`
 
-- `imagens/Brain_anterior_Camk2n1.png`
+-   `imagens/Brain_anterior_Camk2n1.png`
 
 # Informações da sessão
 

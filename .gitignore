@@ -8,6 +8,7 @@
 
 # Base de dados local muito grande
 /data/brain.RDS
+/data/allen_cortex.rds
 /data/Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP_outs.zip
 /data/Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP_outs.zip.part
 /data/xenium_tiny_subset/

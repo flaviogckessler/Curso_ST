@@ -35,7 +35,6 @@ Ao final do curso, espera-se que as pessoas participantes sejam capazes de:
 -   técnicas de deconvolução;
 -   análise de comunicação celular;
 -   segmentação celular;
--   outras análises secundárias;
 -   Referências de análise.
 
 ## Metodologia
@@ -78,6 +77,8 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 4.  RCTD: [RCTD Tutorial](https://bioconductor.uib.no/packages/3.22/bioc/vignettes/spacexr/inst/doc/rctd-tutorial.html)
 
 5.  CellChat: [CellChat inference and analysis of spatially proximal cell-cell communication](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat_analysis_of_spatial_transcriptomics_data.html)
+
+6. RGraphSpace: [Spatial-segmented data with Seurat and RGraphSpace](https://sysbiolab.github.io/RGraphSpace/articles/spatial-segmentation1.html)
 
 ## Leituras recomendadas
 

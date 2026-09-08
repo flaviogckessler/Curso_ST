@@ -49,78 +49,58 @@ Ao final do roteiro, você será capaz de:
 1.  explicar por que a deconvolução requer uma referência single-cell anotada;
 2.  obter do `SeuratData` as contagens brutas e as coordenadas do Visium;
 3.  preparar a referência single-cell do córtex de camundongo do Allen Institute [@Tasic2016];
-4.  executar o RCTD no modo `doublet`;
+4.  executar o RCTD;
 5.  inspecionar e visualizar as proporções estimadas; e
 6.  acrescentar a anotação dominante ao objeto Seurat original.
 
-> **Ponto essencial:** o objeto Seurat pode conter simultaneamente diferentes representações da expressão. Nesta análise será lida exclusivamente a camada `counts` do ensaio `Spatial`. A presença de uma camada normalizada no mesmo objeto não altera as contagens brutas, desde que a camada correta seja selecionada explicitamente.
-
 # Fundamentos conceituais
 
-Um spot do Visium é maior que uma única célula e pode capturar RNA proveniente de vários tipos celulares. O RCTD aprende perfis de expressão a partir de dados anotados de scRNA-seq ou snRNA-seq, corrige diferenças entre as plataformas da referência e da amostra espacial e estima a contribuição de cada tipo celular em cada spot [@Cable2022RCTD].
+Um spot do Visium é maior que uma única célula e pode capturar RNA proveniente de vários tipos celulares. O RCTD aprende perfis de expressão a partir de dados anotados de scRNA-seq (single-cell) ou snRNA-seq (single-nucleus), corrige diferenças entre as plataformas da referência e da amostra espacial e estima a contribuição de cada tipo celular em cada spot [@Cable2022RCTD].
 
 A análise possui duas entradas e uma saída principal:
 
 | Componente | Objeto utilizado | Informação necessária |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | Amostra espacial | `stxBrain`, seção `anterior1`, carregada por `SeuratData` | contagens brutas de genes por spots e coordenadas dos spots |
 | Referência single-cell | córtex de camundongo do Allen Institute | contagens brutas de genes por células e um rótulo de tipo celular por célula |
 | Resultado do RCTD | objeto da classe `RCTD` | classificação e pesos de até dois tipos celulares por spot |
 
 O `spacexr` oferece três modos:
 
-- `doublet`: ajusta no máximo dois tipos celulares por spot;
-- `multi`: ajusta até `MAX_MULTI_TYPES` tipos celulares por spot; e
-- `full`: não impõe um limite fixo ao número de tipos celulares.
+-   `doublet`: ajusta no máximo dois tipos celulares por spot;
+-   `multi`: ajusta até `MAX_MULTI_TYPES` tipos celulares por spot; e
+-   `full`: não impõe um limite fixo ao número de tipos celulares.
 
-Usaremos o modo `doublet`, mantendo a configuração já validada no servidor. Nesse modo, o RCTD atribui um ou dois tipos celulares a cada spot. Isso é uma simplificação do modelo e não significa que um spot Visium contenha, biologicamente, no máximo duas células ou dois tipos celulares.
+Usaremos o modo `doublet`, por ser mais leve. No modo `doublet`, o RCTD atribui um ou dois tipos celulares a cada spot. Isso é uma simplificação do modelo e não significa que um spot Visium contenha, biologicamente, no máximo duas células ou dois tipos celulares.
 
 # Antes de começar
 
 ## Requisitos computacionais
 
-- R e, preferencialmente, RStudio;
-- no mínimo 20 GB de memória RAM, embora uma quantidade maior seja recomendada;
-- acesso à internet para a primeira instalação dos pacotes e dos dados; e
-- múltiplos núcleos de CPU para reduzir o tempo de execução, quando disponíveis.
+-   R e RStudio;
+-   no mínimo 20 GB de memória RAM, embora uma quantidade maior seja recomendada;
+-   acesso à internet para a primeira instalação dos pacotes e dos dados; e
+-   múltiplos núcleos de CPU para reduzir o tempo de execução, quando disponíveis.
 
 Como referência de desempenho, a execução validada para este material levou 14,22 minutos em um servidor de alta performance com 160 GB de RAM e 30 núcleos de CPU disponíveis para processamento paralelo. O tempo pode variar bastante de acordo com o equipamento, a carga do servidor e o número de tipos celulares da referência. O parâmetro `max_cores` controla o paralelismo na CPU; esta análise não utiliza aceleração por GPU.
 
-A versão HTML desta vinheta apresenta o texto e os blocos de código, mas não executa a análise nem exibe resultados. Para gerar essa versão, use:
-
-```{r renderizar-vinheta, eval=FALSE}
-rmarkdown::render(
-  "RCTD_Deconvolution_stxbrain.Rmd",
-  params = list(run_analysis = FALSE)
-)
-```
+Além disso, a paralelização só será possível se você estiver utilizando Linux ou Mac como sistema operacional. Para usuários de Windows, o máximo de cores utilizado terá de ser igual a 1, o que pode aumentar consideravelmente o tempo de processamente. Essa vinheta, diferentemente das demais, possui alguns plots gerados pela análise para que você possa visualizar mesmo que não consiga rodar o fluxo de trabalho integralmente.
 
 Durante o curso, recomenda-se executar os blocos de código na ordem em que aparecem. Assim, cada objeto intermediário pode ser conferido antes de prosseguir.
 
 ## Estrutura esperada das pastas
 
-O conjunto `stxBrain` não precisa ser copiado para o repositório. Ele será instalado pelo `SeuratData` na biblioteca de pacotes do R. O único arquivo de entrada local é `allen_cortex.rds`, que deve ficar em `data/`. Os resultados serão gravados em `resultados/`, as figuras em `imagens/` e a vinheta e o HTML permanecerão em `vinhetas/`.
+O conjunto `stxBrain` não precisa ser copiado para o repositório. Ele será instalado pelo `SeuratData` na biblioteca de pacotes do R. O único arquivo de entrada local é `allen_cortex.rds`, que deve ficar em `data/`, ele será instalado na sequência. Os resultados serão gravados em `resultados/`, as figuras em `imagens/`.
 
 ``` text
 Curso_ST/
-|-- README.md
-|-- bibliography.bib
-|-- apresentacoes/
-|-- data/
-|   `-- allen_cortex.rds
 |-- imagens/
-|-- resultados/
-|-- scripts/
-`-- vinhetas/
-    |-- RCTD_Deconvolution_stxbrain.Rmd
-    `-- RCTD_Deconvolution_stxbrain.html
+`-- resultados/
 ```
-
-O arquivo `bibliography.bib` é compartilhado por todas as vinhetas e deve permanecer na raiz do repositório. Por isso, o cabeçalho deste documento utiliza o caminho relativo `../bibliography.bib`.
 
 # Conferir os pacotes necessários
 
-A instalação de todos os pacotes e de suas dependências está centralizada em `Configuracao_do_ambiente_RStudio.Rmd`. Esta vinheta utiliza a versão 2.2.1 do repositório original do `spacexr` no GitHub, cuja interface oferece `create.RCTD()` e `run.RCTD()` e não é intercambiável com a interface do Bioconductor.
+A instalação de todos os pacotes e de suas dependências está centralizada em [Configuracao_do_ambiente_RStudio.Rmd](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html). Esta vinheta utiliza a versão 2.2.1 do repositório original do `spacexr` no GitHub, cuja interface oferece `create.RCTD()` e `run.RCTD()` e não é intercambiável com a interface do Bioconductor.
 
 ```{r conferir-pacotes-rctd, message = FALSE}
 pacotes_rctd <- c(
@@ -139,8 +119,6 @@ if (length(pacotes_rctd_ausentes) > 0) {
   )
 }
 ```
-
-Depois de executar a primeira vinheta, reinicie a sessão do R antes de continuar. Isso evita que uma versão do `spacexr` carregada anteriormente permaneça ativa na memória.
 
 # Informar manualmente o diretório das vinhetas
 
@@ -163,7 +141,7 @@ getwd()
 Agora substitua o caminho entre aspas pelo caminho que você acabou de copiar e execute o bloco:
 
 ```{r definir-diretorios}
-diretorio_vinhetas <- "COLE_AQUI_O_DIRETORIO_DAS_VINHETAS"
+diretorio_vinhetas <- getwd()
 
 diretorio_vinhetas <- normalizePath(
   diretorio_vinhetas,
@@ -324,7 +302,7 @@ O RCTD requer uma referência de RNA-seq biologicamente adequada e anotada. Usar
 
 ## Baixar a referência uma única vez
 
-O bloco abaixo não é executado automaticamente. Se o instrutor já forneceu `data/allen_cortex.rds`, pule esta etapa. Caso contrário, execute o bloco e aguarde o término do download.
+Instale a referência de single-cell com o código abaixo, ele irá salvar o seguinte arquivo: `data/allen_cortex.rds`. **Cuidado:** O arquivo baixado possui cerca de **1GB**.
 
 ```{r baixar-referencia, eval=FALSE}
 arquivo_referencia <- file.path(diretorio_dados, "allen_cortex.rds")
@@ -529,8 +507,8 @@ invisible(gc())
 
 No modo `doublet`, os resultados principais ficam em dois componentes do objeto `RCTD`:
 
-- `results_df`: classificação do spot e tipos celulares atribuídos;
-- `weights_doublet`: pesos associados ao primeiro e ao segundo tipo.
+-   `results_df`: classificação do spot e tipos celulares atribuídos;
+-   `weights_doublet`: pesos associados ao primeiro e ao segundo tipo.
 
 ```{r inspecionar-pesos}
 resultado_spots <- RCTD@results$results_df
@@ -545,10 +523,10 @@ table(resumo_spots_rctd$spot_class)
 
 As classes produzidas pelo RCTD são:
 
-- `singlet`: um tipo celular foi atribuído com confiança;
-- `doublet_certain`: dois tipos celulares foram atribuídos com confiança;
-- `doublet_uncertain`: somente o primeiro tipo é confiável; e
-- `reject`: o método não produziu uma atribuição confiável.
+-   `singlet`: um tipo celular foi atribuído com confiança;
+-   `doublet_certain`: dois tipos celulares foram atribuídos com confiança;
+-   `doublet_uncertain`: somente o primeiro tipo é confiável; e
+-   `reject`: o método não produziu uma atribuição confiável.
 
 # Acrescentar as anotações ao objeto Seurat
 
@@ -599,7 +577,7 @@ invisible(gc())
 
 A figura abaixo foi produzida durante a execução manual validada da vinheta e é apresentada aqui como exemplo. Ela é incorporada ao HTML a partir do arquivo PNG já salvo, sem executar novamente o código.
 
-![Classificação dos spots pelo RCTD.](../imagens/rctd_classificacao_spots.png){width=85%}
+![Classificação dos spots pelo RCTD.](../imagens/rctd_classificacao_spots.png){width="85%"}
 
 Em seguida, visualize o primeiro e o segundo tipo celular atribuídos. O segundo tipo deve ser interpretado somente junto com `spot_class`: ele é confiável quando o spot foi classificado como `doublet_certain`.
 
@@ -670,13 +648,13 @@ invisible(gc())
 
 Os mapas individuais permitem examinar com mais detalhe a distribuição espacial de cada atribuição.
 
-![Primeiro tipo celular atribuído a cada spot.](../imagens/rctd_primeiro_tipo_celular.png){width=85%}
+![Primeiro tipo celular atribuído a cada spot.](../imagens/rctd_primeiro_tipo_celular.png){width="85%"}
 
-![Segundo tipo celular atribuído a cada spot.](../imagens/rctd_segundo_tipo_celular.png){width=85%}
+![Segundo tipo celular atribuído a cada spot.](../imagens/rctd_segundo_tipo_celular.png){width="85%"}
 
 O painel combinado facilita a comparação direta entre o primeiro e o segundo tipo celular.
 
-![Comparação entre o primeiro e o segundo tipo celular atribuídos pelo RCTD.](../imagens/rctd_tipos_celulares_combinados.png){width=100%}
+![Comparação entre o primeiro e o segundo tipo celular atribuídos pelo RCTD.](../imagens/rctd_tipos_celulares_combinados.png){width="100%"}
 
 # Salvar os resultados reutilizáveis
 
@@ -701,9 +679,9 @@ saveRDS(
 
 Os arquivos possuem finalidades complementares:
 
-- `stxbrain_RCTD_doublet_results.rds`: objeto completo produzido pelo RCTD;
-- `stxbrain_RCTD_doublet_spot_summary.csv`: classificação, primeiro e segundo tipos celulares e seus pesos por spot; e
-- `stxbrain_Seurat_com_RCTD.rds`: objeto Seurat com os resultados do RCTD no metadado.
+-   `stxbrain_RCTD_doublet_results.rds`: objeto completo produzido pelo RCTD;
+-   `stxbrain_RCTD_doublet_spot_summary.csv`: classificação, primeiro e segundo tipos celulares e seus pesos por spot; e
+-   `stxbrain_Seurat_com_RCTD.rds`: objeto Seurat com os resultados do RCTD no metadado.
 
 As figuras `rctd_classificacao_spots.png`, `rctd_primeiro_tipo_celular.png`, `rctd_segundo_tipo_celular.png` e `rctd_tipos_celulares_combinados.png` serão gravadas em `imagens/`.
 
