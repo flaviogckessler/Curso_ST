@@ -1615,6 +1615,9 @@ do sinal e comparação das visualizações.</p>
 <p>A versão HTML, quando for produzida, apresentará o roteiro sem
 executar a análise. Durante o curso, abra este arquivo <code>.Rmd</code>
 no RStudio e execute os blocos na ordem em que aparecem.</p>
+<p>Essa vinheta segue o fluxo de trabalho apresentado na vinheta do
+pacote: <a href="https://sysbiolab.github.io/PathwaySpace/articles/spatial-transcriptomics.html">Visualizing
+spatial transcriptomics</a>.</p>
 </div>
 <div id="preparar-o-ambiente" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Preparar o
@@ -1640,9 +1643,9 @@ dir.create(diretorio_imagens, showWarnings = FALSE, recursive = TRUE)</code></pr
 PathwaySpace</h2>
 <p>A instalação do <code>PathwaySpace</code>, do
 <code>RGraphSpace</code> e das demais dependências está centralizada em
-<code>Configuracao_do_ambiente_RStudio.Rmd</code>. Depois de executar a
-primeira vinheta e reiniciar a sessão do R, use o bloco abaixo apenas
-para confirmar que o ambiente está pronto.</p>
+<a href="https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html">Configuracao_do_ambiente_RStudio.Rmd</a>.
+Depois de executar a primeira vinheta e reiniciar a sessão do R, use o
+bloco abaixo apenas para confirmar que o ambiente está pronto.</p>
 <pre class="r"><code>pacotes_visualizacao &lt;- c(
   &quot;Seurat&quot;, &quot;SeuratObject&quot;, &quot;ggplot2&quot;, &quot;patchwork&quot;, &quot;gridExtra&quot;,
   &quot;RGraphSpace&quot;, &quot;PathwaySpace&quot;
@@ -1675,16 +1678,11 @@ library(&quot;patchwork&quot;)</code></pre>
 <h1><span class="header-section-number">3</span> Carregar e inspecionar
 o objeto espacial</h1>
 <p>O arquivo <code>brain.RDS</code> contém o objeto Seurat já processado
-nas etapas anteriores do curso.</p>
-<pre class="r"><code>brain &lt;- readRDS(
-  file.path(diretorio_dados, &quot;brain.RDS&quot;)
-)
+nas etapas anteriores do curso, ele está localizado na pasta
+<code>data/</code>.</p>
+<pre class="r"><code>brain &lt;- readRDS(file.path(diretorio_dados, &quot;brain.RDS&quot;))
 
-SpatialDimPlot(
-  brain,
-  label = TRUE,
-  label.size = 3
-)</code></pre>
+SpatialDimPlot(brain,label = TRUE,label.size = 3)</code></pre>
 </div>
 <div id="selecionar-a-região-anterior" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Selecionar a região
@@ -1693,16 +1691,10 @@ anterior</h1>
 manteremos somente os spots identificados como pertencentes à região
 anterior. A distribuição espacial dos clusters é exibida novamente após
 o recorte.</p>
-<pre class="r"><code>brain &lt;- subset(
-  brain,
-  subset = region == &quot;anterior&quot;
-)
+<pre class="r"><code>brain &lt;- subset(brain,subset = region == &quot;anterior&quot;)
 
-SpatialDimPlot(
-  brain,
-  label = TRUE,
-  label.size = 3
-)</code></pre>
+SpatialDimPlot(brain,
+  label = TRUE,label.size = 3)</code></pre>
 </div>
 <div id="selecionar-e-visualizar-um-gene-de-interesse" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Selecionar e visualizar
@@ -1712,19 +1704,22 @@ representa sua expressão diretamente nos spots medidos e será armazenado
 no objeto <code>g</code> para a comparação final.</p>
 <pre class="r"><code>gene &lt;- &quot;Camk2n1&quot;
 
-g &lt;- SpatialFeaturePlot(
-  brain,
-  features = gene,
-  ncol = 3,
-  alpha = c(0.1, 1)
-) +
+g_s &lt;- SpatialFeaturePlot(brain,
+  features = gene,ncol = 3,alpha = c(0.1, 1)) +
   labs(title = &quot;Seurat&quot;)
 
-g</code></pre>
+g_s</code></pre>
 </div>
-<div id="construir-o-espaço-gráfico" class="section level1" number="6">
+<div id="construir-o-espaço-gráfico-rgraphspace" class="section level1" number="6">
 <h1><span class="header-section-number">6</span> Construir o espaço
-gráfico</h1>
+gráfico: RGraphSpace</h1>
+<p>O pacote (RGraphSpace)[<a href="https://sysbiolab.github.io/RGraphSpace/articles/get-started.html" class="uri">https://sysbiolab.github.io/RGraphSpace/articles/get-started.html</a>]
+é um desenvolvimento do Sysbiolab (é do BR!). Ele possui funcionalidades
+de interface para plotagem de dados de transcriptômica espacial
+integrados com o <code>ggplot2</code>.</p>
+<p>Além disso, ele constroi o objeto <code>GraphSpace</code> que depois
+será utilizado pelo próximo pacote (PathwaySpace) que irá realizar a
+visualização contínua.</p>
 <div id="obter-coordenadas-imagem-e-expressão" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Obter coordenadas,
 imagem e expressão</h2>
@@ -1733,72 +1728,119 @@ histológica. A matriz da camada <code>data</code> fornece a expressão
 normalizada por transformação de estabilização da variância (VST) que
 será atribuída aos vértices do grafo.</p>
 <pre class="r"><code># Coordenadas dos spots
-spot_coord &lt;- GetTissueCoordinates(
-  brain,
-  scale = &quot;lowres&quot;
-)
+spot_coord &lt;- GetTissueCoordinates(brain,scale = &quot;lowres&quot;)
 
 # Imagem histológica em formato raster
-raster_image &lt;- GetImage(
-  brain,
-  &quot;raster&quot;
-)
+raster_image &lt;- GetImage(brain,&quot;raster&quot;)
 
 # Expressão gênica normalizada por VST
-vst_gexp &lt;- GetAssayData(
-  brain,
-  layer = &quot;data&quot;
-)</code></pre>
+vst_gexp &lt;- GetAssayData(brain,layer = &quot;data&quot;)</code></pre>
 </div>
 <div id="criar-e-normalizar-o-graphspace" class="section level2" number="6.2">
 <h2><span class="header-section-number">6.2</span> Criar e normalizar o
 <code>GraphSpace</code></h2>
 <p>Cada spot será tratado como um vértice. O tamanho dos vértices é
-reduzido para facilitar a inspeção visual. Em seguida,
-<code>normalizeGraphSpace()</code> alinha as coordenadas cartesianas do
-grafo à orientação matricial da imagem.</p>
+reduzido para facilitar a inspeção visual.</p>
+<p>Aqui, vamos extrair os principais atributos do objeto
+<code>Seurat</code> para vocês verem tudo acontecendo. Esses principais
+atributos são: <code>spot_coord</code> que possui as coordenadas XY dos
+spots; <code>raster_image</code> que é a imagem de fundo (corte
+histológico); e <code>vst_gexp</code> que é a matriz de counts dos genes
+em cada spot.</p>
 <pre class="r"><code>spot_coord$nodeSize &lt;- 1
 
-gs &lt;- GraphSpace(spot_coord)
+# Para construir o objeto GraphSpace, se usa a função GraphSpace()
+gs &lt;- GraphSpace(spot_coord,)
+# Atribuir imagem raster ao objeto
+gs_image(gs) &lt;- raster_image
+# Atribuir a matriz de contagem ao objeto
+gs_fdata(gs) &lt;- vst_gexp
 
-gs &lt;- normalizeGraphSpace(
-  gs,
-  image = raster_image
-)</code></pre>
+gs</code></pre>
 </div>
-<div id="conferir-a-sobreposição-espacial" class="section level2" number="6.3">
-<h2><span class="header-section-number">6.3</span> Conferir a
+<div id="coerção-e-normalização-do-graphspace" class="section level2" number="6.3">
+<h2><span class="header-section-number">6.3</span> Coerção e
+normalização do <code>GraphSpace</code></h2>
+<p>Acima, foi demonstrada a contrução do objeto para fins educativos.
+Contudo o pacote já possui uma função de coerção do objeto
+<code>Seurat</code>, ou seja, ela extrai todos os dados do
+<code>Seurat</code> e converter automaticamente para o objeto
+<code>GraphSpace</code>. Esse de coreção é o fluxo recomendado por
+passar todos atributos que estavam armazenados no objeto
+<code>Seurat</code>.</p>
+<p>Na sequência, a função <code>normalizeGraphSpace()</code> alinha as
+coordenadas cartesianas do grafo à orientação matricial da imagem.
+Assim, o RGraphSpace irá criar o “sistema de coordenadas normalizado” em
+que a imagem e as coordenas dos spots serão alinhados a nível do
+pixel.</p>
+<pre class="r"><code># Função de coerção do objeto Seurat
+gs &lt;- as.GraphSpace(brain, space = &quot;spatial&quot;, scale = &quot;lowres&quot;)
+# Atribuir imagem raster ao objeto
+gs_image(gs) &lt;- SeuratObject::GetImage(brain, mode = &quot;raster&quot;) # igual que raster_image
+gs
+
+# Etapa de normalização.
+gs &lt;- normalizeGraphSpace(gs)</code></pre>
+</div>
+<div id="conferir-a-sobreposição-espacial" class="section level2" number="6.4">
+<h2><span class="header-section-number">6.4</span> Conferir a
 sobreposição espacial</h2>
 <p>O gráfico abaixo sobrepõe os vértices à imagem do tecido. Se as
 coordenadas de outro conjunto estiverem invertidas no eixo vertical, o
 argumento <code>flip.y = TRUE</code> poderá ser usado em
 <code>normalizeGraphSpace()</code>.</p>
-<pre class="r"><code>xy_labs &lt;- labs(
-  x = &quot;Coordenada dos spots 1&quot;,
-  y = &quot;Coordenada dos spots 2&quot;
-)
+<pre class="r"><code>xy_labs &lt;- labs(x = &quot;Coordenada dos spots 1&quot;,y = &quot;Coordenada dos spots 2&quot;)
 
-plotGraphSpace(
-  gs,
-  add.image = TRUE
-) +
+plotGraphSpace(gs,add.image = TRUE) +
   xy_labs</code></pre>
+</div>
+<div id="plotagem-com-rgraphspace" class="section level2" number="6.5">
+<h2><span class="header-section-number">6.5</span> Plotagem com
+RGraphSpace</h2>
+<pre class="r"><code>cpal &lt;- hcl.colors(100, palette = &quot;Spectral&quot;, rev = TRUE)
+
+g &lt;- ggplot(gs) + 
+  annotation_gspace_image(gs) +
+  geom_nodespace(mapping = aes(colour = Camk2n1), size = 1.2, pch = 19) + 
+            #Altere tamanho do spot em size para melhorar a visualização
+  scale_colour_continuous(palette = cpal) +
+  theme_gspace_coords(theme = &quot;th3&quot;, is_norm = TRUE, 
+    xlab = &quot;Tissue coordinates 1&quot;, ylab = &quot;Tissue coordinates 2&quot;) + 
+  labs(title = &quot;RGraphSpace&quot;)
+g
+
+ggsave(filename = file.path(
+    diretorio_imagens,
+    &quot;Brain_ant_RGraphSpace_Camk2n1.png&quot;
+  ),plot = g,width = 5,height = 5,units = &quot;in&quot;,dpi = 120,bg = &quot;white&quot;)</code></pre>
 </div>
 </div>
 <div id="construir-o-pathwayspace" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Construir o
 PathwaySpace</h1>
+<p>O pacote (PathwaySpace)[<a href="https://sysbiolab.github.io/PathwaySpace/articles/get-started.html" class="uri">https://sysbiolab.github.io/PathwaySpace/articles/get-started.html</a>]
+também é um desenvolvimento do Sysbiolab (é do BR de novo!!). Esse
+pacote é focado na projeção de sinal que permite realizar a visualização
+contínua de dados transcriptômica espacial. Com essa projeção é possível
+“preencher” os espaços entre os spots que não se conhece o sinal.</p>
 <div id="calcular-a-distância-entre-spots" class="section level2" number="7.1">
 <h2><span class="header-section-number">7.1</span> Calcular a distância
 entre spots</h2>
-<p>O <code>PathwaySpace</code> é construído a partir do espaço gráfico.
-A distância média ao spot mais próximo (<code>pdist</code>) será usada
-como referência espacial pela função de decaimento da projeção.</p>
+<p>O <code>PathwaySpace</code> é construído a partir do objeto
+<code>GraphSpace</code>. A distância média de cada spot ao seu vizinho
+mais próximo (<code>pdist</code>) será usada como referência espacial
+pela função de decaimento da projeção.</p>
 <pre class="r"><code>pspace_obj &lt;- buildPathwaySpace(gs)
 
 nspot &lt;- getNearestNode(pspace_obj)
+
 pdist &lt;- mean(nspot$dist)
 pdist</code></pre>
+<p>Esse <code>pdist</code> é a média das distância (euclidiana) entre os
+spots e seus vizinhos mais próximos. No caso de Visium v1/v2 essa
+distância relativa do sistema de coordenadas normalizado seria
+comparável à 100um (distância entre os centros dos spots nessa versão da
+plataforma).</p>
 </div>
 <div id="mapear-a-silhueta-do-tecido" class="section level2" number="7.2">
 <h2><span class="header-section-number">7.2</span> Mapear a silhueta do
@@ -1806,17 +1848,10 @@ tecido</h2>
 <p>A silhueta delimita a área sobre a qual o sinal será projetado. O
 valor de base controla a extensão inicial dessa representação em torno
 do grafo.</p>
-<pre class="r"><code>pspace_obj &lt;- silhouetteMapping(
-  pspace_obj,
-  baseline = 0.1
-)
+<pre class="r"><code>pspace_obj &lt;- silhouetteMapping(pspace_obj,baseline = 0.1)
 
-plotPathwaySpace(
-  ps = pspace_obj,
-  theme = &quot;th3&quot;,
-  add.image = TRUE,
-  si.alpha = 0.5
-) +
+plotPathwaySpace(ps = pspace_obj,
+  theme = &quot;th3&quot;,add.image = TRUE,si.alpha = 0.5) +
   xy_labs</code></pre>
 </div>
 </div>
@@ -1827,17 +1862,17 @@ gênico</h1>
 correspondentes aos spots. A projeção circular espalha esse sinal no
 espaço contínuo, ponderando a contribuição de cada spot pela distância e
 agregando as contribuições por média ponderada.</p>
-<pre class="r"><code>vertexSignal(pspace_obj)[colnames(vst_gexp)] &lt;- vst_gexp[gene, ]
+<pre class="r"><code># Informar nome do gene de interesse para plotar
+activeFeature(pspace_obj) &lt;- &quot;Camk2n1&quot;
 
-pspace_obj &lt;- circularProjection(
-  pspace_obj,
+pspace_obj &lt;- circularProjection(pspace_obj,
   k = gs_vcount(pspace_obj),
-  decay.fun = weibullDecay(
-    decay = 0.5,
-    pdist = pdist
-  ),
-  aggregate.fun = signalAggregation(&quot;wmean&quot;)
-)</code></pre>
+  decay.fun = weibullDecay(decay = 0.5,pdist = pdist),
+  aggregate.fun = signalAggregation(&quot;wmean&quot;))</code></pre>
+<p>Aqui a projeção foi calculada e armazenada no objeto. A projeção
+depende de duas funções: decaimento e agregação. Caso queira entender
+melhor como elas funcionam, por favor acesse as vinhetas introdutórias
+do pacote: (PathwaySpace)[<a href="https://sysbiolab.github.io/PathwaySpace/articles/get-started.html" class="uri">https://sysbiolab.github.io/PathwaySpace/articles/get-started.html</a>].</p>
 </div>
 <div id="visualizar-a-projeção" class="section level1" number="9">
 <h1><span class="header-section-number">9</span> Visualizar a
@@ -1845,77 +1880,49 @@ projeção</h1>
 <div id="separar-a-imagem-e-o-sinal-projetado" class="section level2" number="9.1">
 <h2><span class="header-section-number">9.1</span> Separar a imagem e o
 sinal projetado</h2>
+<pre class="r"><code># Apenas imagem histológica de fundo
+p1 &lt;- ggplot(pspace_obj) + 
+  annotation_gspace_image(pspace_obj) +
+  xy_labs
+
+# Sinal do gene sobreposto à imagem de fundo
+p2 &lt;- ggplot(pspace_obj) + 
+  annotation_gspace_image(pspace_obj) + 
+  annotation_pspace_signal(pspace_obj, si.alpha = 0.5) + 
+  xy_labs
+
+p1 + p2</code></pre>
 <p>O primeiro painel mostra a imagem do tecido e o segundo apresenta o
-sinal contínuo produzido pelo PathwaySpace.</p>
-<pre class="r"><code>p1 &lt;- plotPathwaySpace(
-  ps = pspace_obj,
-  theme = &quot;th3&quot;,
-  title = gene
-)
-
-p1$image &lt;- p1$image + xy_labs
-p1$graph &lt;- p1$graph + xy_labs
-
-p1$image + p1$graph</code></pre>
+sinal contínuo produzido pelo PathwaySpace sobre posto à imagem.</p>
 </div>
-<div id="sobrepor-a-projeção-à-imagem" class="section level2" number="9.2">
-<h2><span class="header-section-number">9.2</span> Sobrepor a projeção à
-imagem</h2>
-<p>Com <code>add.image = TRUE</code>, a projeção é mostrada sobre o
-tecido. A transparência da silhueta é definida como 0,25 para preservar
-a leitura da imagem histológica.</p>
-<pre class="r"><code>plotPathwaySpace(
-  ps = pspace_obj,
-  theme = &quot;th3&quot;,
-  title = gene,
-  add.image = TRUE,
-  si.alpha = 0.25
-) +
-  xy_labs</code></pre>
-</div>
-<div id="destacar-os-valores-mais-altos" class="section level2" number="9.3">
-<h2><span class="header-section-number">9.3</span> Destacar os valores
+<div id="destacar-os-valores-mais-altos" class="section level2" number="9.2">
+<h2><span class="header-section-number">9.2</span> Destacar os valores
 mais altos</h2>
 <p>Nesta visualização, a escala é truncada para o intervalo de 0,5 a 1.
 Assim, o painel enfatiza as áreas com maior sinal projetado.</p>
-<pre class="r"><code>p &lt;- plotPathwaySpace(
-  ps = pspace_obj,
-  theme = &quot;th3&quot;,
-  title = &quot;none&quot;,
-  add.image = TRUE,
-  si.alpha = 0.25,
-  zlim = c(0.5, 1)
-) +
-  labs(title = &quot;PathwaySpace&quot;)
+<pre class="r"><code>p &lt;- ggplot(pspace_obj) + 
+  annotation_gspace_image(pspace_obj) + 
+  annotation_pspace_signal(pspace_obj, si.alpha = 0.25, zlim = c(0.5, 1)) + 
+  xy_labs + labs(title = &quot;PathwaySpace&quot;)
 
-p</code></pre>
+p
+
+ggsave(filename = file.path(
+    diretorio_imagens,
+    &quot;Brain_ant_PathwaySpace_Camk2n1.png&quot;
+  ),plot = p,width = 7,height = 5,units = &quot;in&quot;,dpi = 120,bg = &quot;white&quot;)</code></pre>
 </div>
 </div>
-<div id="comparar-seurat-e-pathwayspace" class="section level1" number="10">
-<h1><span class="header-section-number">10</span> Comparar Seurat e
-PathwaySpace</h1>
+<div id="comparar-seurat-rgraphspace-e-pathwayspace" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Comparar Seurat,
+RGraphSpace e PathwaySpace</h1>
 <p>O painel final coloca lado a lado a expressão observada nos spots
 pelo Seurat e a projeção contínua produzida pelo PathwaySpace.</p>
-<pre class="r"><code>g + p
+<pre class="r"><code>g_s + g + p
 
-painel_comparacao &lt;- gridExtra::arrangeGrob(
-  g,
-  p,
-  ncol = 2
-)
-
-ggsave(
-  filename = file.path(
-    diretorio_imagens,
-    &quot;Brain_anterior_Camk2n1.png&quot;
-  ),
-  plot = painel_comparacao,
-  width = 10,
-  height = 5,
-  units = &quot;in&quot;,
-  dpi = 120,
-  bg = &quot;white&quot;
-)</code></pre>
+ggsave(filename = file.path(diretorio_imagens,&quot;Brain_anterior_Camk2n1.png&quot;),
+       plot = g_s + g + p,
+  width = 12,height = 6,units = &quot;in&quot;,dpi = 120,bg = &quot;white&quot;)</code></pre>
 </div>
 <div id="arquivo-produzido" class="section level1" number="11">
 <h1><span class="header-section-number">11</span> Arquivo produzido</h1>

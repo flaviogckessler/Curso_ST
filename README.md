@@ -1,5 +1,7 @@
 # Análise de Dados de Transcriptômica Espacial
 
+*Setembro 2026*
+
 Este repositório reúne os materiais do curso **Análise de Dados de Transcriptômica Espacial**, dedicado aos fundamentos das tecnologias de transcriptômica de alta resolução e às estratégias de análise de dados espaciais. O curso combina aulas expositivas e atividades práticas em R, com ênfase em dados gerados pela plataforma Visium.
 
 ## Objetivos
@@ -55,11 +57,25 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 
 ## Vinhetas
 
-1.  [Configuração do ambiente RStudio](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html)  — Aula 1
+### do Curso
+
+1.  [Configuração do ambiente RStudio](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html) — Aula 1
 2.  [Controle de qualidade, pré-processamento e clusterização de dados espaciais](https://flaviogckessler.github.io/Curso_ST/vinhetas/Controle_de_qualidade_preprocessamento_clusterizacao_espacial.html) — Aula 2
 3.  [Visualização contínua de dados espaciais com PathwaySpace](https://flaviogckessler.github.io/Curso_ST/vinhetas/Visualizacao_Continua_PathwaySpace.html) — Aula 2
-4.  [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html)  — Aula 3
-5.  [Comunicação celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html)  — Aula 3
+4.  [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html) — Aula 3
+5.  [Comunicação celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html) — Aula 3
+
+### Vinhetas externas recomendadas
+
+1.  Seurat: [Analysis, visualization, and integration of spatial datasets with Seurat](https://satijalab.org/seurat/articles/spatial_vignette)
+
+2. RGraphSpace: [Spatial Feature Data](https://sysbiolab.github.io/RGraphSpace/articles/spatial-data.html)
+
+3.  PathwaySpace: [Visualizing spatial transcriptomics](https://sysbiolab.github.io/PathwaySpace/articles/spatial-transcriptomics.html)
+
+4.  RCTD: [RCTD Tutorial](https://bioconductor.uib.no/packages/3.22/bioc/vignettes/spacexr/inst/doc/rctd-tutorial.html)
+
+5.  CellChat: [CellChat inference and analysis of spatially proximal cell-cell communication](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat_analysis_of_spatial_transcriptomics_data.html)
 
 ## Leituras recomendadas
 
@@ -85,6 +101,10 @@ De toda maneira, a estrutura do curso, apresentações e códigos são oriundos 
 
 *Deixo aqui meu agradecimento à Carol, querida amiga, por primeiro ter me convidado para participar da primeira versão como também por compartilhar o material do curso.*
 
+## Declaração de IA
+
+Ferramentas de inteligência artificial generativa foram utilizadas como apoio na elaboração e revisão de textos, códigos e materiais deste repositório. Todo o conteúdo produzido com esse auxílio foi revisado, adaptado e validado pelo autor, que permanece responsável por sua versão final.
+
 ## Licenças
 
-O conteúdo de texto deste curso está disponível sob a licença [Creative Commons Atribuição-NãoComercial 4.0 Internacional (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.pt-br). Os códigos-fonte estão disponíveis sob a licença MIT. Consulte o arquivo [LICENSE.md](LICENSE.md) para os termos aplicáveis.
+O conteúdo de texto deste curso está disponível sob a licença [Creative Commons Atribuição-NãoComercial 4.0 Internacional (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.pt-br). Os códigos-fonte (vinhetas) estão disponíveis sob a licença MIT. Consulte o arquivo [LICENSE.md](LICENSE.md) para os termos aplicáveis.
