@@ -1,0 +1,266 @@
+---
+title: "Segmentação Celular"
+author:
+  - name: Sysbiolab Team
+  - name: Flávio Gabriel Carazza-Kessler
+date: "2026-09-08"
+bibliography: ../bibliography.bib
+link-citations: true
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+params:
+  run_analysis: false
+---
+
+```{r configuracao, include=FALSE, purl=FALSE}
+executar_analise <- if (exists("params", inherits = FALSE)) {
+  isTRUE(params$run_analysis)
+} else {
+  # Ao executar os blocos manualmente, o objeto params não é criado.
+  # Nesse caso, a análise fica habilitada por padrão.
+  TRUE
+}
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = executar_analise,
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 8,
+  fig.height = 6,
+  dev = "png",
+  dpi = 120,
+  message = TRUE,
+  warning = FALSE
+)
+```
+
+# Visão geral
+
+Nesta vinheta, exploraremos limites celulares de um conjunto Xenium por meio da integração entre `RGraphSpace`, `sf` e `ggplot2` [@RGraphSpace2026]. Cada célula será representada de duas formas complementares: como um vértice localizado no centro da célula e como o polígono correspondente à sua segmentação. A expressão de `Slc17a7` será projetada nas duas representações para permitir uma comparação direta.
+
+O roteiro foi adaptado da vinheta do Sysbiolab Team, [Spatial segmentation with RGraphSpace](https://sysbiolab.github.io/RGraphSpace/articles/spatial-segmentation1.html).
+
+> **Importante:** esta análise não executa um novo algoritmo de segmentação sobre a imagem. Os limites celulares já foram estimados pelo processamento do Xenium; aqui, eles são carregados, inspecionados e utilizados como geometrias espaciais no `GraphSpace`.
+
+Ao final, você será capaz de:
+
+1.  baixar e carregar o objeto `GraphSpace` preparado para o curso;
+2.  acessar as geometrias celulares armazenadas no objeto;
+3.  inspecionar células individuais e um conjunto de células; e
+4.  comparar a expressão representada nos centros e nos polígonos celulares.
+
+# Origem e preparação dos dados
+
+Os dados brutos do Xenium não serão baixados diretamente nesta atividade porque o arquivo compactado possui mais de 3 GB, sua extração também ocupa vários gigabytes e a importação completa exige tempo, memória e processamento consideráveis. Para tornar a atividade rápida e reproduzível em computadores pessoais, usaremos apenas a região previamente recortada e salva como um objeto leve.
+
+A preparação completa está documentada na vinheta avançada [Instalação e preparação dos dados Xenium com RGraphSpace](https://flaviogckessler.github.io/Curso_ST/vinhetas/Instalacao_dados_Xenium_RGraphSpace.html). Nela, os dados brutos são baixados, carregados pelo Seurat, convertidos para `GraphSpace`, associados aos polígonos celulares, orientados e recortados.
+
+O objeto resultante está versionado no repositório do curso: [fonte de Xenium_GS_Crop.RDS no GitHub](https://github.com/flaviogckessler/Curso_ST/blob/main/data/Xenium_GS_Crop.RDS). O bloco de download desta vinheta utiliza o endereço direto do mesmo arquivo.
+
+# Preparar o ambiente
+
+## Definir as pastas
+
+Antes de executar o código, defina o diretório de trabalho como a pasta `vinhetas/`. No RStudio, use **Session \> Set Working Directory \> To Source File Location**. O objeto baixado será mantido em `data/`.
+
+``` text
+Curso_ST/
+|-- bibliography.bib
+`-- data/
+     `-- Xenium_GS_Crop.RDS
+```
+
+```{r definir-diretorios}
+diretorio_vinhetas <- getwd()
+diretorio_curso <- dirname(diretorio_vinhetas)
+diretorio_dados <- file.path(diretorio_curso, "data")
+
+dir.create(diretorio_dados, showWarnings = FALSE, recursive = TRUE)
+```
+
+## Conferir os pacotes necessários
+
+A instalação dos pacotes do curso está centralizada em [Configuracao_do_ambiente_RStudio.Rmd](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html). Depois de executar a vinheta e reiniciar a sessão do R, use o bloco abaixo para confirmar que o ambiente está pronto.
+
+```{r conferir-pacotes}
+pacotes_segmentacao <- c(
+  "RGraphSpace", "Seurat", "SeuratObject", "sf", "ggplot2", "patchwork"
+)
+
+pacotes_ausentes <- pacotes_segmentacao[
+  !vapply(pacotes_segmentacao, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(pacotes_ausentes) > 0) {
+  stop(
+    "Execute primeiro Configuracao_do_ambiente_RStudio.Rmd. ",
+    "Pacotes ausentes: ",
+    paste(pacotes_ausentes, collapse = ", ")
+  )
+}
+```
+
+## Carregar os pacotes
+
+```{r carregar-pacotes, message=FALSE}
+library("RGraphSpace")
+library("Seurat")
+library("SeuratObject")
+library("sf")
+library("ggplot2")
+library("patchwork")
+```
+
+# Baixar e carregar o objeto preparado
+
+O download é realizado somente quando o arquivo ainda não existe em `data/`.
+
+```{r baixar-objeto-preparado}
+url_dados <- paste0(
+  "https://raw.githubusercontent.com/flaviogckessler/Curso_ST/",
+  "main/data/Xenium_GS_Crop.RDS"
+)
+
+arquivo_dados <- file.path(diretorio_dados, "Xenium_GS_Crop.RDS")
+
+if (!file.exists(arquivo_dados)) {
+  utils::download.file(
+    url_dados,
+    arquivo_dados,
+    mode = "wb"
+  )
+}
+
+gs_crop <- readRDS(arquivo_dados)
+
+if (!inherits(gs_crop, "GraphSpace")) {
+  stop("O arquivo baixado não contém um objeto da classe GraphSpace.")
+}
+
+gs_crop
+```
+
+# Inspecionar as geometrias celulares
+
+Os polígonos estão armazenados como uma coleção de geometrias simples do pacote `sf`. Cada posição da coleção corresponde a uma célula e está alinhada ao respectivo vértice do `GraphSpace`.
+
+```{r acessar-geometrias}
+gs_crop@nodes$geometry
+
+geometrias_celulares <- gs_crop@nodes$geometry
+
+length(geometrias_celulares)
+sf::st_geometry_type(geometrias_celulares) |> table()
+```
+
+## Visualizar células individuais
+
+As três primeiras geometrias são mostradas separadamente. O contorno preserva a forma e a área estimadas para cada célula, enquanto sua posição permanece no sistema de coordenadas normalizado durante a preparação dos dados.
+
+```{r visualizar-celulas-individuais, fig.show='hold', out.width='32%', fig.width=4, fig.height=4}
+plot(gs_crop@nodes$geometry[1])
+plot(gs_crop@nodes$geometry[2])
+plot(gs_crop@nodes$geometry[3])
+```
+
+## Combinar as primeiras vinte geometrias
+
+`st_combine()` reúne as geometrias em uma única coleção sem dissolver os limites entre células. Assim, os vinte contornos continuam reconhecíveis no mesmo painel.
+
+```{r combinar-geometrias, fig.width=6, fig.height=6}
+plot(st_combine(gs_crop@nodes$geometry[1:20]))
+```
+
+A operação alternativa `st_union()` dissolve fronteiras internas quando as geometrias se tocam e pode exigir mais processamento. Ela não é necessária nesta comparação.
+
+```{r unir-geometrias-opcional, eval=FALSE}
+plot(st_union(gs_crop@nodes$geometry[1:20]))
+```
+
+# Comparar centros e polígonos celulares
+
+Para que os dois painéis sejam comparáveis, ambos utilizam a transformação `log2(x + 1)`, a mesma paleta e os mesmos limites de escala para a expressão de `Slc17a7`.
+
+```{r definir-escala}
+cpal <- hcl.colors(100, palette = "Geyser", rev = FALSE)
+data_range <- range(log2(gs_crop[["fdata"]] + 1))
+```
+
+## Representar as células como vértices
+
+No primeiro painel, cada célula é representada por um ponto localizado em seu centro. Essa forma compacta facilita a inspeção da distribuição espacial geral, mas não mostra o contorno celular.
+
+```{r representar-vertices, fig.width=7, fig.height=6}
+p1 <- ggplot(gs_crop) +
+  geom_nodespace(
+    mapping = aes(colour = log2(Slc17a7 + 1)),
+    size = 1.5,
+    pch = 19
+  ) +
+  scale_colour_continuous(palette = cpal, limits = data_range) +
+  theme_gspace_coords(
+    theme = "th3",
+    is_norm = TRUE,
+    xlab = "Coordenada do tecido 1",
+    ylab = "Coordenada do tecido 2"
+  )
+
+p1
+```
+
+## Representar as células como polígonos
+
+No segundo painel, a expressão preenche o polígono de cada célula. Os centros são sobrepostos como pequenos pontos pretos para evidenciar a correspondência entre as duas representações.
+
+```{r representar-poligonos, fig.width=7, fig.height=6}
+p2 <- ggplot(gs_crop) +
+  geom_sf(
+    mapping = aes(
+      geometry = geometry,
+      fill = log2(Slc17a7 + 1)
+    )
+  ) +
+  scale_fill_continuous(palette = cpal, limits = data_range) +
+  geom_nodespace(colour = "black", size = 0.2, pch = 19) +
+  theme_gspace_coords(
+    theme = "th3",
+    is_norm = TRUE,
+    xlab = "Coordenada do tecido 1",
+    ylab = "Coordenada do tecido 2"
+  )
+
+p2
+```
+
+## Colocar as representações lado a lado
+
+O painel final resume a integração do RGraphSpace com as geometrias `sf`. A posição e a expressão são as mesmas nos dois lados; muda apenas a representação espacial de cada célula.
+
+```{r comparar-representacoes, fig.width=12, fig.height=6}
+p1 + p2 +
+  patchwork::plot_annotation(
+    title = "Integração do RGraphSpace com geometrias sf",
+    theme = theme(plot.title = element_text(hjust = 0.5))
+  )
+```
+
+# Conclusão
+
+A representação por vértices resume cada célula em uma posição, enquanto a representação por polígonos incorpora seus limites espaciais. Como o `GraphSpace` mantém expressão, posições e geometrias alinhadas, os mesmos atributos podem ser mapeados diretamente com a gramática do `ggplot2` [@RGraphSpace2026].
+
+O objeto `data/Xenium_GS_Crop.RDS` permanece disponível para novas explorações sem a necessidade de baixar e processar novamente os dados brutos do Xenium.
+
+# Informações da sessão
+
+```{r informacoes-sessao, echo=FALSE}
+sessionInfo()
+```
+
+# Referências

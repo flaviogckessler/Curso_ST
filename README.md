@@ -34,6 +34,7 @@ Ao final do curso, espera-se que as pessoas participantes sejam capazes de:
 
 -   técnicas de deconvolução;
 -   análise de comunicação celular;
+-   segmentação celular;
 -   outras análises secundárias;
 -   Referências de análise.
 
@@ -64,6 +65,7 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 3.  [Visualização contínua de dados espaciais com PathwaySpace](https://flaviogckessler.github.io/Curso_ST/vinhetas/Visualizacao_Continua_PathwaySpace.html) — Aula 2
 4.  [Deconvolução com RCTD](https://flaviogckessler.github.io/Curso_ST/vinhetas/RCTD_Deconvolution_stxbrain.html) — Aula 3
 5.  [Comunicação celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/CellChat_Comunicacao_Celular_PathwaySpace.html) — Aula 3
+6.  [Segmentação Celular](https://flaviogckessler.github.io/Curso_ST/vinhetas/Segmentacao_Celular.html) — Aula 3
 
 ### Vinhetas externas recomendadas
 
