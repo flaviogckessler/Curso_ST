@@ -138,7 +138,7 @@ g_s
 
 # Construir o espaço gráfico: RGraphSpace
 
-O pacote (RGraphSpace)[https://sysbiolab.github.io/RGraphSpace/articles/get-started.html] é um desenvolvimento do Sysbiolab (é do BR!). Ele possui funcionalidades de interface para plotagem de dados de transcriptômica espacial integrados com o `ggplot2`.
+O pacote [RGraphSpace](https://sysbiolab.github.io/RGraphSpace/articles/get-started.html) é um desenvolvimento do Sysbiolab (é do BR!). Ele possui funcionalidades de interface para plotagem de dados de transcriptômica espacial integrados com o `ggplot2`.
 
 Além disso, ele constroi o objeto `GraphSpace` que depois será utilizado pelo próximo pacote (PathwaySpace) que irá realizar a visualização contínua.
 
@@ -163,7 +163,6 @@ Cada spot será tratado como um vértice. O tamanho dos vértices é reduzido pa
 
 Aqui, vamos extrair os principais atributos do objeto `Seurat` para vocês verem tudo acontecendo. Esses principais atributos são: `spot_coord` que possui as coordenadas XY dos spots; `raster_image` que é a imagem de fundo (corte histológico); e `vst_gexp` que é a matriz de counts dos genes em cada spot.
 
-
 ```{r criar-normalizar-graphspace}
 spot_coord$nodeSize <- 1
 
@@ -176,6 +175,7 @@ gs_fdata(gs) <- vst_gexp
 
 gs
 ```
+
 ## Coerção e normalização do `GraphSpace`
 
 Acima, foi demonstrada a contrução do objeto para fins educativos. Contudo o pacote já possui uma função de coerção do objeto `Seurat`, ou seja, ela extrai todos os dados do `Seurat` e converter automaticamente para o objeto `GraphSpace`. Esse de coreção é o fluxo recomendado por passar todos atributos que estavam armazenados no objeto `Seurat`.
@@ -203,6 +203,7 @@ xy_labs <- labs(x = "Coordenada dos spots 1",y = "Coordenada dos spots 2")
 plotGraphSpace(gs,add.image = TRUE) +
   xy_labs
 ```
+
 ## Plotagem com RGraphSpace
 
 ```{r plotar-graphspace}
@@ -226,7 +227,7 @@ ggsave(filename = file.path(
 
 # Construir o PathwaySpace
 
-O pacote (PathwaySpace)[https://sysbiolab.github.io/PathwaySpace/articles/get-started.html] também é um desenvolvimento do Sysbiolab (é do BR de novo!!). Esse pacote é focado na projeção de sinal que permite realizar a visualização contínua de dados transcriptômica espacial. Com essa projeção é possível "preencher" os espaços entre os spots que não se conhece o sinal.
+O pacote [PathwaySpace](https://sysbiolab.github.io/PathwaySpace/articles/get-started.html) também é um desenvolvimento do Sysbiolab (é do BR de novo!!). Esse pacote é focado na projeção de sinal que permite realizar a visualização contínua de dados transcriptômica espacial. Com essa projeção é possível "preencher" os espaços entre os spots que não se conhece o sinal.
 
 ## Calcular a distância entre spots
 
@@ -240,7 +241,8 @@ nspot <- getNearestNode(pspace_obj)
 pdist <- mean(nspot$dist)
 pdist
 ```
-Esse `pdist` é a média das distância (euclidiana) entre os spots e seus vizinhos mais próximos. No caso de Visium v1/v2 essa distância relativa do sistema de coordenadas normalizado seria comparável à 100um (distância entre os centros dos spots nessa versão da plataforma).
+
+`pdist` é a média das distâncias (euclidianas) entre os spots e seus vizinhos mais próximos. No caso de Visium v1/v2 essa distância relativa do sistema de coordenadas normalizado seria comparável à 100um (distância entre os centros dos spots nessa versão da plataforma).
 
 ## Mapear a silhueta do tecido
 
@@ -267,7 +269,8 @@ pspace_obj <- circularProjection(pspace_obj,
   decay.fun = weibullDecay(decay = 0.5,pdist = pdist),
   aggregate.fun = signalAggregation("wmean"))
 ```
-Aqui a projeção foi calculada e armazenada no objeto. A projeção depende de duas funções: decaimento e agregação. Caso queira entender melhor como elas funcionam, por favor acesse as vinhetas introdutórias do pacote: (PathwaySpace)[https://sysbiolab.github.io/PathwaySpace/articles/get-started.html].
+
+Aqui a projeção foi calculada e armazenada no objeto. A projeção depende de duas funções: decaimento e agregação. Caso queira entender melhor como elas funcionam, por favor acesse as vinhetas introdutórias do pacote: [PathwaySpace](https://sysbiolab.github.io/PathwaySpace/articles/get-started.html).
 
 # Visualizar a projeção
 
@@ -287,7 +290,8 @@ p2 <- ggplot(pspace_obj) +
 
 p1 + p2
 ```
-O primeiro painel mostra a imagem do tecido e o segundo apresenta o sinal contínuo produzido pelo PathwaySpace sobre posto à imagem.
+
+O primeiro painel mostra a imagem do tecido e o segundo apresenta o sinal contínuo produzido pelo PathwaySpace sobreposto à imagem.
 
 ## Destacar os valores mais altos
 
@@ -319,9 +323,15 @@ ggsave(filename = file.path(diretorio_imagens,"Brain_anterior_Camk2n1.png"),
   width = 12,height = 6,units = "in",dpi = 120,bg = "white")
 ```
 
-# Arquivo produzido
+# Arquivos produzidos
 
-Ao concluir a vinheta, a comparação final estará disponível em `imagens/Brain_anterior_Camk2n1.png`.
+Ao concluir a vinheta, as imagens salvas estarão disponíveis em:
+
+- `imagens/Brain_ant_RGraphSpace_Camk2n1.png`
+
+- `imagens/Brain_ant_PathwaySpace_Camk2n1.png`
+
+- `imagens/Brain_anterior_Camk2n1.png`
 
 # Informações da sessão
 
