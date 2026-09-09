@@ -40,7 +40,7 @@ knitr::opts_chunk$set(
 
 # Visão geral
 
-Esta vinheta demonstra como estimar misturas de tipos celulares na seção anterior do cérebro de camundongo `stxBrain` com o método Robust Cell Type Decomposition (RCTD), usando a versão 2.2.1 do pacote `spacexr` disponível no GitHub [@Cable2022RCTD].
+Esta vinheta demonstra como estimar misturas de tipos celulares na seção anterior do cérebro de camundongo `stxBrain` com o método Robust Cell Type Decomposition (RCTD), usando o Seurat 5.5.1 e a versão 2.2.1 do pacote `spacexr` disponível no GitHub [@Cable2022RCTD].
 
 O objeto espacial será obtido diretamente pelo pacote `SeuratData`, usando a seção `anterior1` [@Hao2023Seurat]. Nenhum objeto espacial previamente processado será reutilizado. Essa separação é importante porque o RCTD modela contagens brutas de expressão e, por padrão, exige valores inteiros. Matrizes normalizadas, como as produzidas por `NormalizeData()` ou `SCTransform()`, não devem ser fornecidas como entrada do método.
 
@@ -51,7 +51,7 @@ Ao final do roteiro, você será capaz de:
 3.  preparar a referência single-cell do córtex de camundongo do Allen Institute [@Tasic2016];
 4.  executar o RCTD;
 5.  inspecionar e visualizar as proporções estimadas; e
-6.  acrescentar a anotação dominante ao objeto Seurat original.
+6.  acrescentar ao objeto Seurat a classificação e os tipos celulares atribuídos pelo RCTD.
 
 # Fundamentos conceituais
 
@@ -82,25 +82,27 @@ Usaremos o modo `doublet`, por ser mais leve. No modo `doublet`, o RCTD atribui 
 -   acesso à internet para a primeira instalação dos pacotes e dos dados; e
 -   múltiplos núcleos de CPU para reduzir o tempo de execução, quando disponíveis.
 
-Como referência de desempenho, a execução validada para este material levou 14,22 minutos em um servidor de alta performance com 160 GB de RAM e 30 núcleos de CPU disponíveis para processamento paralelo. O tempo pode variar bastante de acordo com o equipamento, a carga do servidor e o número de tipos celulares da referência. O parâmetro `max_cores` controla o paralelismo na CPU; esta análise não utiliza aceleração por GPU.
+Como referência de desempenho, a execução validada para a etapa de cálculo do algortimo do RCTD levou 14,22 minutos em um servidor de alta performance com 160 GB de RAM e 30 núcleos de CPU disponíveis para processamento paralelo. O tempo pode variar bastante de acordo com o equipamento, a carga do servidor e o número de tipos celulares da referência. O parâmetro `max_cores` controla o paralelismo na CPU; esta análise não utiliza aceleração por GPU.
 
-Além disso, a paralelização só será possível se você estiver utilizando Linux ou Mac como sistema operacional. Para usuários de Windows, o máximo de cores utilizado terá de ser igual a 1, o que pode aumentar consideravelmente o tempo de processamente. Essa vinheta, diferentemente das demais, possui alguns plots gerados pela análise para que você possa visualizar mesmo que não consiga rodar o fluxo de trabalho integralmente.
+Além disso, a paralelização empregada neste fluxo está disponível apenas em Linux e macOS. No Windows, `max_cores` deve ser igual a 1, o que pode aumentar consideravelmente o tempo de processamento. Diferentemente das demais, esta vinheta inclui figuras previamente geradas para que o fluxo possa ser acompanhado mesmo quando não for possível executar a análise completa durante o curso.
 
 Durante o curso, recomenda-se executar os blocos de código na ordem em que aparecem. Assim, cada objeto intermediário pode ser conferido antes de prosseguir.
 
 ## Estrutura esperada das pastas
 
-O conjunto `stxBrain` não precisa ser copiado para o repositório. Ele será instalado pelo `SeuratData` na biblioteca de pacotes do R. O único arquivo de entrada local é `allen_cortex.rds`, que deve ficar em `data/`, ele será instalado na sequência. Os resultados serão gravados em `resultados/`, as figuras em `imagens/`.
+O conjunto `stxBrain` não precisa ser copiado para o repositório: ele é instalado pelo `SeuratData` na biblioteca de pacotes do R. O único arquivo de entrada local é `allen_cortex.rds`, que será baixado mais adiante e armazenado em `data/`. Os resultados serão gravados em `resultados/` e as figuras em `imagens/`.
 
 ``` text
 Curso_ST/
+|-- data/
+|   `-- allen_cortex.rds
 |-- imagens/
 `-- resultados/
 ```
 
 # Conferir os pacotes necessários
 
-A instalação de todos os pacotes e de suas dependências está centralizada em [Configuracao_do_ambiente_RStudio.Rmd](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html). Esta vinheta utiliza a versão 2.2.1 do repositório original do `spacexr` no GitHub, cuja interface oferece `create.RCTD()` e `run.RCTD()` e não é intercambiável com a interface do Bioconductor.
+A instalação de todos os pacotes e de suas dependências está centralizada em [Configuracao_do_ambiente_RStudio.Rmd](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html). O roteiro pressupõe esse ambiente recém-instalado e adota o Seurat 5.5.1 como referência, sem caminhos alternativos para versões anteriores. Para a deconvolução, utiliza a versão 2.2.1 do repositório original do `spacexr` no GitHub, cuja interface oferece `create.RCTD()` e `run.RCTD()` e não é intercambiável com a interface do Bioconductor.
 
 ```{r conferir-pacotes-rctd, message = FALSE}
 pacotes_rctd <- c(
@@ -120,47 +122,18 @@ if (length(pacotes_rctd_ausentes) > 0) {
 }
 ```
 
-# Informar manualmente o diretório das vinhetas
+# Definir os diretórios de trabalho
 
-Para que cada bloco de código possa ser executado separadamente, a vinheta não tenta descobrir automaticamente onde o arquivo está salvo. Portanto, você deverá informar esse caminho uma única vez.
+Para que cada bloco de código possa ser executado separadamente, o fluxo usa a pasta de trabalho atual como ponto de partida. Antes de continuar, confirme que ela corresponde à pasta `vinhetas/` do curso.
 
 Siga estes passos:
 
-1.  Abra `RCTD_Deconvolution_stxbrain.Rmd` no RStudio.
-2.  Confirme que o diretório de trabalho é a pasta que contém esse arquivo. Se necessário, use o menu **Session \> Set Working Directory \> To Source File Location**.
-3.  Execute `getwd()` no Console ou no pequeno bloco abaixo.
-4.  O R mostrará algo semelhante a `[1] "D:/meu_curso/Curso_ST/vinhetas"`.
-5.  Copie o caminho mostrado entre aspas e cole no lugar de `COLE_AQUI_O_DIRETORIO_DAS_VINHETAS` no bloco seguinte. No Windows, prefira barras `/`, como no exemplo, ou duplique cada barra invertida: `\\`.
-
-`getwd()` apenas informa o diretório de trabalho atual. Antes de copiá-lo, confirme que essa é realmente a pasta onde está a vinheta.
-
-```{r consultar-diretorio}
-getwd()
-```
-
-Agora substitua o caminho entre aspas pelo caminho que você acabou de copiar e execute o bloco:
+1.  Confirme que o diretório de trabalho é a pasta que contém esse arquivo. Se necessário, use o menu **Session \> Set Working Directory \> To Source File Location**.
+2.  Execute `getwd()` no Console. O R deverá mostrar um caminho terminado em `Curso_ST/vinhetas`.
+3.  Caso o caminho seja diferente, ajuste o diretório de trabalho antes de executar o bloco abaixo.
 
 ```{r definir-diretorios}
 diretorio_vinhetas <- getwd()
-
-diretorio_vinhetas <- normalizePath(
-  diretorio_vinhetas,
-  winslash = "/",
-  mustWork = TRUE
-)
-
-arquivo_vinheta <- file.path(
-  diretorio_vinhetas,
-  "RCTD_Deconvolution_stxbrain.Rmd"
-)
-
-if (!file.exists(arquivo_vinheta)) {
-  stop(
-    "O arquivo RCTD_Deconvolution_stxbrain.Rmd não foi encontrado em: ",
-    diretorio_vinhetas,
-    "\nRevise o caminho copiado de getwd()."
-  )
-}
 
 diretorio_curso <- dirname(diretorio_vinhetas)
 diretorio_dados <- file.path(diretorio_curso, "data")
@@ -187,18 +160,12 @@ library("ggplot2")
 library("spacexr")
 
 options(stringsAsFactors = FALSE)
-
-if (packageVersion("SeuratObject") < package_version("5.0.0")) {
-  stop(
-    "Esta vinheta requer SeuratObject 5 ou mais recente. ",
-    "Execute novamente a instalação na primeira vinheta e reinicie o R."
-  )
-}
 ```
 
-Confira a versão carregada. O resultado esperado é `2.2.1`:
+Confira as versões carregadas. Os resultados esperados são Seurat `5.5.1` e `spacexr` `2.2.1` ou maior:
 
-```{r conferir-versao-spacexr}
+```{r conferir-versoes}
+packageVersion("Seurat")
 packageVersion("spacexr")
 ```
 
@@ -206,39 +173,33 @@ packageVersion("spacexr")
 
 ## Conferir o conjunto de dados
 
-O `stxBrain` é distribuído como um pacote de dados separado e também é instalado na primeira vinheta. O próximo bloco somente confirma que o conjunto está disponível antes de continuar.
+Nesta vinheta, o objeto Seurat `stxBrain` será carregado novamente porque o RCTD precisa das contagens brutas, e não do objeto normalizado produzido nas etapas anteriores do curso. O bloco abaixo apenas confirma que o conjunto de dados já está instalado. Caso ele ainda não esteja disponível, retorne à vinheta [Configuracao_do_ambiente_RStudio.Rmd](https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html).
 
 ```{r conferir-stxbrain}
 if (!requireNamespace("stxBrain.SeuratData", quietly = TRUE)) {
   stop(
-    "O conjunto stxBrain não está instalado. Execute primeiro ",
-    "Configuracao_do_ambiente_RStudio.Rmd."
+    "O conjunto stxBrain não está instalado.\nExecute primeiro a vinheta ",
+    "Configuracao_do_ambiente_RStudio.Rmd: \n",
+    "https://flaviogckessler.github.io/Curso_ST/vinhetas/Configuracao_do_ambiente_RStudio.html"
   )
 }
 
-message("O conjunto stxBrain está instalado.")
+message("O conjunto stxBrain já foi instalado.")
 ```
 
 ## Carregar a seção anterior 1
 
+Com o objeto instalado, basta realizar o seu carregamento:
+
 ```{r carregar-stxbrain, message = FALSE}
 stxbrain <- SeuratData::LoadData("stxBrain", type = "anterior1")
-
-# O pacote de dados foi criado em uma versão anterior do Seurat. Esta
-# conversão apenas atualiza a estrutura do ensaio; ela não normaliza os dados.
-if (!inherits(stxbrain[["Spatial"]], "Assay5")) {
-  stxbrain[["Spatial"]] <- methods::as(
-    stxbrain[["Spatial"]],
-    Class = "Assay5"
-  )
-}
 
 stxbrain
 ```
 
 ## Extrair as contagens espaciais brutas
 
-Não use a camada `data`, a camada `scale.data`, um ensaio `SCT` nem qualquer matriz previamente normalizada. O RCTD receberá apenas `Spatial/counts`.
+O RCTD receberá somente a camada `counts` do ensaio `Spatial`, que conserva as contagens inteiras e não normalizadas. As camadas `data` e `scale.data`, assim como um ensaio `SCT`, não devem ser usadas como entrada.
 
 ```{r extrair-contagens-espaciais}
 contagens_espaciais <- SeuratObject::LayerData(
@@ -258,15 +219,15 @@ contagens_espaciais[
 
 ## Examinar a profundidade de sequenciamento
 
-O total de transcritos varia entre os spots. Este resumo ajuda a conhecer a distribuição antes da deconvolução.
+O total de transcritos varia entre os spots. Este resumo permite examinar a profundidade de sequenciamento e a ordem de grandeza das bibliotecas antes da deconvolução.
 
 ```{r resumir-contagens-por-spot}
 summary(Matrix::colSums(contagens_espaciais))
 ```
 
-## Extrair e padronizar as coordenadas dos spots
+## Extrair as coordenadas dos spots
 
-Versões diferentes do Seurat podem retornar as coordenadas como `x`/`y` ou como `imagecol`/`imagerow`. O bloco abaixo seleciona uma dessas representações e usa os nomes esperados pelo `spacexr`.
+No Seurat 5.5.1, a imagem espacial do objeto `stxBrain` fornece as coordenadas não escaladas nas colunas `x` e `y`. O identificador de cada spot permanece nos nomes das linhas, permitindo alinhar diretamente a tabela de coordenadas às colunas da matriz de contagens antes de criar o objeto do `spacexr`.
 
 ```{r extrair-coordenadas-espaciais}
 nome_imagem <- SeuratObject::Images(stxbrain)[1]
@@ -276,22 +237,12 @@ coordenadas_espaciais <- SeuratObject::GetTissueCoordinates(
   scale = NULL
 )
 
-coordenadas_espaciais <- as.data.frame(coordenadas_espaciais)
-
-if ("cell" %in% colnames(coordenadas_espaciais)) {
-  rownames(coordenadas_espaciais) <- coordenadas_espaciais$cell
-}
-
-if (all(c("imagecol", "imagerow") %in% colnames(coordenadas_espaciais))) {
-  coordenadas_espaciais <- coordenadas_espaciais[
-    , c("imagecol", "imagerow"), drop = FALSE
-  ]
-  colnames(coordenadas_espaciais) <- c("x", "y")
-} else {
-  coordenadas_espaciais <- coordenadas_espaciais[
-    , c("x", "y"), drop = FALSE
-  ]
-}
+coordenadas_espaciais <- as.data.frame(
+  coordenadas_espaciais[, c("x", "y"), drop = FALSE]
+)
+coordenadas_espaciais <- coordenadas_espaciais[
+  colnames(contagens_espaciais), , drop = FALSE
+]
 
 head(coordenadas_espaciais)
 ```
@@ -302,7 +253,7 @@ O RCTD requer uma referência de RNA-seq biologicamente adequada e anotada. Usar
 
 ## Baixar a referência uma única vez
 
-Instale a referência de single-cell com o código abaixo, ele irá salvar o seguinte arquivo: `data/allen_cortex.rds`. **Cuidado:** O arquivo baixado possui cerca de **1GB**.
+Baixe a referência single-cell com o código abaixo. O arquivo será salvo como `data/allen_cortex.rds`. **Atenção:** o download possui cerca de **1 GB** e precisa ser realizado apenas uma vez.
 
 ```{r baixar-referencia, eval=FALSE}
 arquivo_referencia <- file.path(diretorio_dados, "allen_cortex.rds")
@@ -321,9 +272,12 @@ download.file(
 
 A referência publicada armazena os rótulos de tipos celulares na coluna `subclass`.
 
+**Cuidado:** o carregamento do arquivo de referência, células corticais de camundongo disponibilizadas pelo Allen Institute, é realizado no código abaixo. O arquivo é grande e vai ocupar **3GB** de memória quando for carregado para o ambiente de trabalho.
+
 ```{r preparar-referencia}
 arquivo_referencia <- file.path(diretorio_dados, "allen_cortex.rds")
 
+# Confere se arquivo existe
 if (!file.exists(arquivo_referencia)) {
   stop(
     "A referência single-cell não foi encontrada em: ",
@@ -332,31 +286,34 @@ if (!file.exists(arquivo_referencia)) {
   )
 }
 
+# Carrega o arquivo de referência
 referencia_allen <- readRDS(arquivo_referencia)
 
-referencia_allen <- SeuratObject::UpdateSeuratObject(referencia_allen)
+#Extrai metadados das células do arquivo de referência
 metadados_referencia <- referencia_allen[[]]
 
-if (!inherits(referencia_allen[["RNA"]], "Assay5")) {
-  referencia_allen[["RNA"]] <- methods::as(
-    referencia_allen[["RNA"]],
-    Class = "Assay5"
-  )
-}
-
+# Extrai contagens do arquivo de referência
 contagens_referencia <- SeuratObject::LayerData(
   object = referencia_allen,
   assay = "RNA",
   layer = "counts"
 )
+head(contagens_referencia[,1:5])
 
+# Organiza os metadados para seguir a mesma ordem da matriz de contagem
 metadados_referencia <- metadados_referencia[
   colnames(contagens_referencia), , drop = FALSE
 ]
 
+head(metadados_referencia)
+```
+
+```{r preparar-referencia2}
+# Extrai coluna dos tipos celulares dos metadados
 tipos_celulares_referencia <- as.character(
   metadados_referencia$subclass
 )
+# Corrige strings dos nomes das células
 tipos_celulares_referencia <- gsub(
   "/", "-", tipos_celulares_referencia, fixed = TRUE
 )
@@ -365,10 +322,13 @@ celulas_validas <- !is.na(tipos_celulares_referencia) &
   nzchar(tipos_celulares_referencia)
 
 tamanhos_tipos <- table(tipos_celulares_referencia[celulas_validas])
+
+# Filtra tipos celulares que estão presentes em menos de 25 células
 tipos_elegiveis <- names(tamanhos_tipos[tamanhos_tipos >= 25])
 celulas_validas <- celulas_validas &
   tipos_celulares_referencia %in% tipos_elegiveis
 
+# Retira células com tipo celular raro da contagem de referência
 contagens_referencia <- contagens_referencia[
   , celulas_validas, drop = FALSE
 ]
@@ -376,16 +336,16 @@ tipos_celulares_referencia <- droplevels(
   factor(tipos_celulares_referencia[celulas_validas])
 )
 
-data.frame(
-  celulas_referencia = ncol(contagens_referencia),
-  tipos_celulares_retidos = nlevels(tipos_celulares_referencia),
-  coluna_de_rotulo = "subclass"
-)
+print(paste("N° de células de referência: ",ncol(contagens_referencia)))
+print("Células de referência:")
+levels(tipos_celulares_referencia)
 ```
 
 O filtro padrão do RCTD exige pelo menos 25 células por tipo celular. Os tipos raros são removidos explicitamente acima, evitando que desapareçam de forma silenciosa durante o pré-processamento.
 
 ## Identificar genes compartilhados
+
+Vamos analisar os dados gerais que iremos trabalhar
 
 ```{r identificar-genes-comuns}
 genes_comuns <- intersect(
@@ -417,40 +377,42 @@ contagens_referencia <- contagens_referencia[
   genes_comuns, , drop = FALSE
 ]
 
+# Retirar dados pesados do ambiente de trabalho (liberar RAM)
 rm(resumo_genes, referencia_allen)
 invisible(gc())
 ```
 
+O dado espacial (`stxBrain`) possui 31053 genes identificados. A referência single-cell com os tipos celulares anotados possui 34617 genes identificados. O dado espacial e a referência possuem uma intersecção de 19293 genes identificados.
+
 # Construir os objetos de entrada do `spacexr`
 
-A versão do GitHub recebe a referência em um objeto `Reference` e a amostra espacial em um objeto `SpatialRNA`.
+O `spacexr` recebe a referência single-cell em um objeto `Reference` e a amostra espacial em um objeto `SpatialRNA`. Em ambos, as somas por coluna representam o número total de UMIs de cada célula ou spot.
 
 ```{r construir-objetos-entrada}
 names(tipos_celulares_referencia) <- colnames(contagens_referencia)
 
+# Construir objeto do pacote spacexr para o dado da referência
 referencia_rctd <- spacexr::Reference(
   contagens_referencia,
   tipos_celulares_referencia,
   Matrix::colSums(contagens_referencia)
 )
 
+# Construir objeto do pacote spacexr para o dado espacial
 consulta_rctd <- spacexr::SpatialRNA(
   as.data.frame(coordenadas_espaciais),
   contagens_espaciais,
   Matrix::colSums(contagens_espaciais)
 )
 
-head(referencia_rctd)
-head(consulta_rctd)
+data.frame(objeto = c("referencia_rctd", "consulta_rctd"),
+  genes = c(nrow(referencia_rctd@counts),nrow(consulta_rctd@counts)),
+  unidades = c(ncol(referencia_rctd@counts),ncol(consulta_rctd@counts)),
+  tipo_de_unidade = c("células", "spots"))
 
-rm(
-  contagens_espaciais,
-  contagens_referencia,
-  coordenadas_espaciais,
-  metadados_referencia,
-  tipos_celulares_referencia,
-  genes_comuns
-)
+# Retirar dados pesados do ambiente de trabalho (liberar RAM)
+rm(contagens_espaciais,contagens_referencia,coordenadas_espaciais,
+  metadados_referencia,tipos_celulares_referencia,genes_comuns)
 invisible(gc())
 ```
 
@@ -458,12 +420,12 @@ invisible(gc())
 
 ## Criar o objeto RCTD
 
-`create.RCTD()` prepara os dados, seleciona genes informativos e aprende os perfis dos tipos celulares da referência. O servidor utilizado no curso possui 30 núcleos de CPU; o código reserva dois para o sistema e utiliza 28 na análise. Em outro computador, ajuste `numero_nucleos` para um valor adequado à máquina disponível.
+`create.RCTD()` prepara os dados, seleciona genes informativos e aprende os perfis dos tipos celulares da referência. No código abaixo foi atribuído `1` núcleo de processamento para evitar exaurir o seu computador. Contudo, isso irá deixar a tarefa muito demorado. Consulte o número de cores que o CPU do seu computador possui e assine um número que seja seguro. A parelelização está apenas disponíveis em sistemas Linux e macOS. No Windows, use obrigatoriamente `1`.
 
 ```{r criar-rctd}
 set.seed(20260904)
 
-numero_nucleos <- 28
+numero_nucleos <- 1
 
 RCTD <- spacexr::create.RCTD(
   consulta_rctd,
@@ -478,6 +440,8 @@ invisible(gc())
 ## Executar a deconvolução
 
 O modo `doublet` procura um ou dois tipos celulares por spot. O tempo de execução varia de acordo com o servidor e o número de células da referência.
+
+**Cuidado:** Essa é a etapa mais demorada da análise!
 
 ```{r executar-rctd,message = FALSE}
 inicio_rctd <- Sys.time()
@@ -548,7 +512,7 @@ Primeiro, observe onde o RCTD identificou `singlet`, `doublet_certain`, `doublet
 
 ```{r visualizar-classes-rctd}
 p_classes <- Seurat::SpatialDimPlot(
-  object = stxbrain_Seurat_com_RCTD,
+  object = stxbrain,
   images = nome_imagem,
   group.by = "spot_class",
   pt.size.factor = 1.6,
@@ -583,7 +547,7 @@ Em seguida, visualize o primeiro e o segundo tipo celular atribuídos. O segundo
 
 ```{r visualizar-tipos-rctd, fig.width=12, fig.height=6}
 p1 <- Seurat::SpatialDimPlot(
-  object = stxbrain_Seurat_com_RCTD,
+  object = stxbrain,
   images = nome_imagem,
   group.by = "first_type",
   pt.size.factor = 1.6,
@@ -592,7 +556,7 @@ p1 <- Seurat::SpatialDimPlot(
   labs(title = "Primeiro tipo celular")
 
 p2 <- Seurat::SpatialDimPlot(
-  object = stxbrain_Seurat_com_RCTD,
+  object = stxbrain,
   images = nome_imagem,
   group.by = "second_type",
   pt.size.factor = 1.6,
