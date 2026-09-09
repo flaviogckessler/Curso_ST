@@ -146,7 +146,6 @@ if (length(Images(brain)) != 1L) {
 nome_imagem <- Images(brain)[1]
 
 brain
-Images(brain)
 table(brain$region)
 ```
 
@@ -207,6 +206,7 @@ spatial.factors <- data.frame(
 )
 
 spatial.factors
+head(spatial.locs)
 ```
 
 ## Criar o objeto CellChat
@@ -239,7 +239,7 @@ cellchat@DB <- CellChatDB.use
 
 # Pré-processar os dados de expressão
 
-O CellChat mantém os genes presentes na base selecionada e identifica genes e interações com expressão aumentada. O plano `multisession` permite distribuir essa etapa em até quatro processos do R.
+O CellChat mantém os genes presentes na base selecionada e identifica genes e interações com expressão aumentada. A função `plan()` com opção `multisession` permite distribuir essa etapa em até quatro processos do R (*cores*).
 
 ```{r preprocessar-cellchat}
 cellchat <- subsetData(cellchat)
@@ -252,14 +252,18 @@ cellchat <- identifyOverExpressedInteractions(cellchat, variable.both = FALSE)
 
 # Inferir a comunicação entre os clusters
 
-Nesta etapa, as interações são limitadas a 150 µm. As comunicações dependentes de contato são restringidas a 100 µm, aproximadamente a distância entre os centros de spots adjacentes no Visium. A execução pode levar vários minutos, dependendo do computador.
+Nesta etapa, as interações e comunicações dependentes de contato foram restringidas a 100 µm, aproximadamente a distância entre os centros de spots adjacentes no Visium. Esse corte ajuda a acelerar a análise.
+
+Para demonstração de aula, `nboot` foi limitado a 10 para calcular mais rápido. `nboot` é número de testes de permutação utilizado para calcular os p-valores.
+
+**Cuidado:*** Etapa mais custosa da vinheta, a execução pode levar vários minutos. 
 
 ```{r inferir-comunicacao}
 cellchat <- computeCommunProb(
   cellchat, type = "triMean", distance.use = TRUE,
-  interaction.range = 150, scale.distance = 0.01,
+  interaction.range = 100, scale.distance = 0.01,
   contact.range = 100, contact.dependent = TRUE,
-  contact.knn.k = 6, nboot = 100
+  contact.knn.k = 6, nboot = 10
 )
 
 cellchat <- filterCommunication(cellchat, min.cells = 10)
@@ -278,10 +282,10 @@ head(df.net)
 
 # Projetar as comunicações para pares de spots
 
-Agora identificaremos os pares de spots da região anterior separados por até 150 µm. Depois, cada par receberá os clusters de origem e destino e será combinado às interações inferidas pelo CellChat.
+Agora identificaremos os pares de spots da região anterior separados por até 100 µm. Depois, cada par receberá os clusters de origem e destino e será combinado às interações inferidas pelo CellChat.
 
 ```{r identificar-spots-vizinhos}
-interaction.range <- 150
+interaction.range <- 100
 
 coordenadas_um <- spatial.locs * spatial.factors[nome_imagem, "ratio"]
 matriz_distancias <- as.matrix(dist(coordenadas_um))
@@ -366,7 +370,7 @@ cpal1 <- DiscretePalette(nlevels(gs$seurat_clusters), "polychrome")
 ggplot(gs) +
   annotation_gspace_image(gs) +
   geom_nodespace(mapping = aes(colour = seurat_clusters),
-    size = 0.8, pch = 19) +
+    size = 1, pch = 19) +
   scale_colour_manual(values = cpal1) +
   theme_gspace_legend(discrete_colour = TRUE) +
   spatial_theme

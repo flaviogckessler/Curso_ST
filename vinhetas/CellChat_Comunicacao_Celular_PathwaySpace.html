@@ -1725,7 +1725,6 @@ if (length(Images(brain)) != 1L) {
 nome_imagem &lt;- Images(brain)[1]
 
 brain
-Images(brain)
 table(brain$region)</code></pre>
 <p>O resultado esperado é um objeto com 2.696 spots e uma única imagem,
 denominada <code>anterior1</code>.</p>
@@ -1792,7 +1791,8 @@ spatial.factors &lt;- data.frame(
   row.names = nome_imagem
 )
 
-spatial.factors</code></pre>
+spatial.factors
+head(spatial.locs)</code></pre>
 </div>
 <div id="criar-o-objeto-cellchat" class="section level2" number="4.3">
 <h2><span class="header-section-number">4.3</span> Criar o objeto
@@ -1827,9 +1827,9 @@ cellchat@DB &lt;- CellChatDB.use</code></pre>
 <h1><span class="header-section-number">6</span> Pré-processar os dados
 de expressão</h1>
 <p>O CellChat mantém os genes presentes na base selecionada e identifica
-genes e interações com expressão aumentada. O plano
-<code>multisession</code> permite distribuir essa etapa em até quatro
-processos do R.</p>
+genes e interações com expressão aumentada. A função <code>plan()</code>
+com opção <code>multisession</code> permite distribuir essa etapa em até
+quatro processos do R (<em>cores</em>).</p>
 <pre class="r"><code>cellchat &lt;- subsetData(cellchat)
 
 future::plan(&quot;multisession&quot;, workers = 4)
@@ -1840,15 +1840,20 @@ cellchat &lt;- identifyOverExpressedInteractions(cellchat, variable.both = FALSE
 <div id="inferir-a-comunicação-entre-os-clusters" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Inferir a comunicação
 entre os clusters</h1>
-<p>Nesta etapa, as interações são limitadas a 150 µm. As comunicações
-dependentes de contato são restringidas a 100 µm, aproximadamente a
-distância entre os centros de spots adjacentes no Visium. A execução
-pode levar vários minutos, dependendo do computador.</p>
+<p>Nesta etapa, as interações e comunicações dependentes de contato
+foram restringidas a 100 µm, aproximadamente a distância entre os
+centros de spots adjacentes no Visium. Esse corte ajuda a acelerar a
+análise.</p>
+<p>Para demonstração de aula, <code>nboot</code> foi limitado a 10 para
+calcular mais rápido. <code>nboot</code> é número de testes de
+permutação utilizado para calcular os p-valores.</p>
+<p><strong>Cuidado:</strong>* Etapa mais custosa da vinheta, a execução
+pode levar vários minutos.</p>
 <pre class="r"><code>cellchat &lt;- computeCommunProb(
   cellchat, type = &quot;triMean&quot;, distance.use = TRUE,
-  interaction.range = 150, scale.distance = 0.01,
+  interaction.range = 100, scale.distance = 0.01,
   contact.range = 100, contact.dependent = TRUE,
-  contact.knn.k = 6, nboot = 100
+  contact.knn.k = 6, nboot = 10
 )
 
 cellchat &lt;- filterCommunication(cellchat, min.cells = 10)</code></pre>
@@ -1866,9 +1871,9 @@ head(df.net)</code></pre>
 <h1><span class="header-section-number">8</span> Projetar as
 comunicações para pares de spots</h1>
 <p>Agora identificaremos os pares de spots da região anterior separados
-por até 150 µm. Depois, cada par receberá os clusters de origem e
+por até 100 µm. Depois, cada par receberá os clusters de origem e
 destino e será combinado às interações inferidas pelo CellChat.</p>
-<pre class="r"><code>interaction.range &lt;- 150
+<pre class="r"><code>interaction.range &lt;- 100
 
 coordenadas_um &lt;- spatial.locs * spatial.factors[nome_imagem, &quot;ratio&quot;]
 matriz_distancias &lt;- as.matrix(dist(coordenadas_um))
@@ -1949,7 +1954,7 @@ cpal1 &lt;- DiscretePalette(nlevels(gs$seurat_clusters), &quot;polychrome&quot;)
 ggplot(gs) +
   annotation_gspace_image(gs) +
   geom_nodespace(mapping = aes(colour = seurat_clusters),
-    size = 0.8, pch = 19) +
+    size = 1, pch = 19) +
   scale_colour_manual(values = cpal1) +
   theme_gspace_legend(discrete_colour = TRUE) +
   spatial_theme</code></pre>
