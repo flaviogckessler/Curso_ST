@@ -1,0 +1,75 @@
+%% Estrutura conceitual editável do curso
+%% Convenção: laranja = dado utilizado; verde = objeto/dado gerado;
+%% roxo = figura gerada; azul = vinheta; cinza = bloco conceitual/suporte.
+flowchart TB
+  classDef support fill:#EEF2FF,stroke:#51648C,color:#17223B,stroke-width:1.5px;
+  classDef concept fill:#F4F7FB,stroke:#6D7D94,color:#17223B,stroke-width:1.5px;
+  classDef used fill:#FFF7E8,stroke:#B97912,color:#4A2B00,stroke-width:1.5px;
+  classDef vignette fill:#EAF4FF,stroke:#1F6E9C,color:#11364A,stroke-width:2px;
+  classDef generated fill:#EAF8EF,stroke:#2F855A,color:#153C28,stroke-width:1.5px;
+  classDef figure fill:#F3ECFF,stroke:#7251A3,color:#35234F,stroke-width:1.5px;
+
+  SUP["SUPORTE TRANSVERSAL<br/>Ementa · 3 apresentações · leituras · referências · QR codes"]:::support
+
+  subgraph A1["AULA 1 · Fundamentos e ambiente · 2 h"]
+    direction TB
+    FUND["Fundamentos<br/>bulk × scRNA-seq × espacial<br/>Visium · Xenium · estrutura dos dados"]:::concept
+    V1["V1 · Configuração do RStudio<br/>R ≥ 4.5 · Seurat · RGraphSpace · PathwaySpace<br/>CellChat · spacexr"]:::vignette
+    ENV["RESULTADO GERADO<br/>Ambiente preparado<br/>pré-requisito para as demais vinhetas"]:::generated
+    FUND --> V1 --> ENV
+  end
+
+  subgraph A2["AULA 2 · Fluxo principal Visium · 3 h"]
+    direction TB
+    STX["DADO UTILIZADO<br/>stxBrain · anterior1 + posterior1<br/>Visium de cérebro de camundongo"]:::used
+    V2["V2 · QC e pré-processamento<br/>percent.mt · SCTransform · PCA · UMAP/t-SNE<br/>clustering · marcadores/DE exploratória · SVGs"]:::vignette
+    BRAIN["DADO GERADO<br/>data/brain.RDS<br/>Seurat normalizado e clusterizado"]:::generated
+    FIG2["FIGURAS GERADAS<br/>QC · clusters · genes · marcadores · SVGs"]:::figure
+    V3["V3 · Visualização contínua<br/>Seurat → RGraphSpace → PathwaySpace"]:::vignette
+    FIG3["FIGURAS GERADAS<br/>spots × sinal contínuo"]:::figure
+    STX --> V2
+    V2 --> BRAIN
+    V2 --> FIG2
+    BRAIN --> V3 --> FIG3
+  end
+
+  subgraph A3["AULA 3 · Análises avançadas · 3 h"]
+    direction TB
+    subgraph RCTD_LANE["Deconvolução"]
+      direction LR
+      RAW["DADO UTILIZADO<br/>stxBrain anterior1<br/>contagens brutas"]:::used
+      ALLEN["DADO UTILIZADO<br/>allen_cortex.rds<br/>scRNA-seq anotado"]:::used
+      V4["V4 · RCTD<br/>deconvolução em modo doublet"]:::vignette
+      RCTD["DADOS GERADOS<br/>objeto RCTD · resumo CSV<br/>Seurat anotado com RCTD"]:::generated
+      FIG4["FIGURAS GERADAS<br/>classes e tipos celulares"]:::figure
+      RAW --> V4
+      ALLEN --> V4
+      V4 --> RCTD
+      V4 --> FIG4
+    end
+    subgraph COMM_LANE["Comunicação celular"]
+      direction LR
+      V5["V5 · CellChat<br/>grupos + restrição espacial<br/>+ projeção PathwaySpace"]:::vignette
+      COMM["DADO GERADO<br/>spot-spot_commu_anterior.rds"]:::generated
+      FIG5["FIGURAS GERADAS<br/>pares ligante–receptor"]:::figure
+      BRAIN -->|"clusters do Seurat"| V5
+      V5 --> COMM
+      V5 --> FIG5
+    end
+    subgraph XENIUM_LANE["Xenium e geometria celular"]
+      direction LR
+      XRAW["DADO UTILIZADO<br/>Xenium público 10x<br/>dados brutos > 3 GB"]:::used
+      VAUX["Vaux · Preparação avançada opcional<br/>importar · associar geometrias · orientar · recortar"]:::vignette
+      XCROP["DADO GERADO<br/>data/Xenium_GS_Crop.RDS<br/>objeto leve versionado"]:::generated
+      V6["V6 · Exploração da segmentação<br/>centros celulares × polígonos"]:::vignette
+      FIG6["FIGURA GERADA<br/>SegCelular_GS_Slc17a7.png"]:::figure
+      XRAW --> VAUX --> XCROP --> V6 --> FIG6
+    end
+
+    REFS["BLOCO CONCEITUAL<br/>Referências de análise e perspectivas<br/>métodos complementares · limitações · leituras · próximos passos"]:::concept
+  end
+
+  SUP --> FUND
+  ENV --> V2
+  ENV -. "ambiente comum" .-> V4
+  ENV -. "ambiente comum" .-> VAUX

@@ -41,6 +41,10 @@ Ao final do curso, espera-se que as pessoas participantes sejam capazes de:
 
 O curso tem caráter teórico-prático. As exposições conceituais são seguidas de atividades práticas, tutoriais e exemplos desenvolvidos em R. As análises têm foco principal em dados de transcriptômica espacial produzidos pela plataforma Visium.
 
+<p align="center">
+  <img src="imagens/estrutura_conceitual_curso_transcriptomica_espacial.png" alt="Estrutura conceitual do curso, com aulas, vinhetas, dados utilizados e resultados gerados" width="65%">
+</p>
+
 ## Carga horária e programação
 
 A carga horária total é de **8 horas**, distribuídas da seguinte forma:
