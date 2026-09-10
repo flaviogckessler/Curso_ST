@@ -42,7 +42,9 @@ Ao final do curso, espera-se que as pessoas participantes sejam capazes de:
 O curso tem caráter teórico-prático. As exposições conceituais são seguidas de atividades práticas, tutoriais e exemplos desenvolvidos em R. As análises têm foco principal em dados de transcriptômica espacial produzidos pela plataforma Visium.
 
 <p align="center">
-  <img src="imagens/estrutura_conceitual_curso_transcriptomica_espacial.png" alt="Estrutura conceitual do curso, com aulas, vinhetas, dados utilizados e resultados gerados" width="65%">
+
+<img src="imagens/estrutura_conceitual_curso_transcriptomica_espacial.png" alt="Estrutura conceitual do curso, com aulas, vinhetas, dados utilizados e resultados gerados" width="75%"/>
+
 </p>
 
 ## Carga horária e programação
@@ -74,7 +76,7 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 
 1.  Seurat: [Analysis, visualization, and integration of spatial datasets with Seurat](https://satijalab.org/seurat/articles/spatial_vignette)
 
-2. RGraphSpace: [Spatial Feature Data](https://sysbiolab.github.io/RGraphSpace/articles/spatial-data.html)
+2.  RGraphSpace: [Spatial Feature Data](https://sysbiolab.github.io/RGraphSpace/articles/spatial-data.html)
 
 3.  PathwaySpace: [Visualizing spatial transcriptomics](https://sysbiolab.github.io/PathwaySpace/articles/spatial-transcriptomics.html)
 
@@ -82,7 +84,7 @@ São recomendados conhecimentos básicos de biologia molecular e de tecnologias 
 
 5.  CellChat: [CellChat inference and analysis of spatially proximal cell-cell communication](https://htmlpreview.github.io/?https://github.com/jinworks/CellChat/blob/master/tutorial/CellChat_analysis_of_spatial_transcriptomics_data.html)
 
-6. RGraphSpace: [Spatial-segmented data with Seurat and RGraphSpace](https://sysbiolab.github.io/RGraphSpace/articles/spatial-segmentation1.html)
+6.  RGraphSpace: [Spatial-segmented data with Seurat and RGraphSpace](https://sysbiolab.github.io/RGraphSpace/articles/spatial-segmentation1.html)
 
 ## Leituras recomendadas
 
